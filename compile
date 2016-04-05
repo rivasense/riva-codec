@@ -1,0 +1,56 @@
+#! /bin/sh
+
+cmake_build () (
+    SRC=`pwd`
+    if [ $# -gt 0 ]; then
+        SRC=`cd "$1" && pwd`
+    fi
+    BUILD=`pwd`
+    if [ $# -gt 1 ]; then
+        BUILD="${2}"
+        mkdir -p "${BUILD}"
+        cd "${BUILD}"
+    fi
+    shift 2
+    cmake "${SRC}" $* && make -j4
+)
+
+project_clean () {
+    echo "-- Cleaning project tree"
+    [ -d build_debug ] && rm -rf build_debug
+    [ -d build_release ] && rm -rf build_release
+    git submodule foreach git clean -xdf
+}
+
+BUILD_TYPE="debug"
+
+# Try to set build type from current branch name:
+GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ $GIT_BRANCH = "develop" ]; then
+    BUILD_TYPE="debug"
+elif [ $GIT_BRANCH = "master" ]; then
+    BUILD_TYPE="release"
+fi
+
+# Use user-specified build type:
+if [ x"$1" = xdebug ]; then
+    BUILD_TYPE="debug"
+elif [ x"$1" = xrelease ]; then
+    BUILD_TYPE="release"
+elif [ x"$1" = xclean ]; then
+    project_clean
+    exit 0
+elif [ x"$1" != x ]; then
+    echo "Usage: $0 [debug|release|clean]"
+    exit 1
+fi
+
+if [ x"$BUILD_TYPE" = x"debug" ]; then
+    BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=Debug"
+elif [ x"$BUILD_TYPE" = x"release" ]; then
+    BUILD_OPTIONS="-DCMAKE_BUILD_TYPE=Releabse"
+fi
+
+BUILD_DIR=`mkdir -p "build_${BUILD_TYPE}" && cd "build_${BUILD_TYPE}" && pwd`
+
+cmake_build . ${BUILD_DIR} ${BUILD_OPTIONS}
