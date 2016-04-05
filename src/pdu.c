@@ -8,6 +8,12 @@ typedef struct pdu_tree {
 
 static pdu_tree_t pdu_tree;
 
+void
+pdu_dict_register(dict_proto_t *protos, dict_sect_t *sects, dict_field_t *fields)
+{
+
+}
+
 pdu_node_t *
 pdu_node_get_child(pdu_node_t *node)
 {
@@ -68,13 +74,13 @@ pdu_node_mk_sibling(pdu_node_t *node, uint32_t id,
 }
 
 pdu_node_t *
-pdu_tree_get_root(void *context)
+pdu_node_get_root(void *context)
 {
     return &pdu_tree.nodes[0];
 }
 
 void
-pdu_tree_trace(pdu_node_t *node)
+pdu_node_trace(pdu_node_t *node)
 {
 
 }
