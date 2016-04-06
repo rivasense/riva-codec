@@ -10,8 +10,6 @@ typedef struct osi_s1ap_head_s
     uint8_t  pdu_code_padding:5;
     uint8_t  pdu_code        :3;
     uint8_t  procedure_code;
-    //uint16_t critically      :9;
-    //uint16_t valsize         :7;
     uint16_t critval;
 } osi_s1ap_head_t;
 
