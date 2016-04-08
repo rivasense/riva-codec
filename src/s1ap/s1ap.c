@@ -34,13 +34,13 @@ dict_nodes[] = {
 static void
 decode_pc_ContextRelease(char *data, uint16_t size, pdu_node_t *parent)
 {
-    pdu_node_mk(".UEContextReleaseComplete", parent, data, size);
+    pdu_node_t *rc = pdu_node_mk(".UEContextReleaseComplete", parent, data, size);
 
     osi_s1ap_valhead_t *valhead = (void *)data;
 
     if (valhead->items > 0) {
-        pdu_node_t *ie_items = pdu_node_mk(".UEContextReleaseComplete.protocolIEs",
-                parent, (char*)(valhead+1), size - sizeof(*valhead));
+        pdu_node_t *ie_items = pdu_node_mk(".protocolIEs",
+                rc, (char*)(valhead+1), size - sizeof(*valhead));
         data += sizeof(*valhead);
         for (uint8_t item = 0; item < valhead->items; item++) {
             osi_s1ap_valitem_head_t *valitem = (void *)data;
@@ -70,19 +70,19 @@ void s1ap_decode(char *data, uint16_t size, void *context)
 {
     pdu_dict_register(dict_nodes);
 
-    pdu_node_mkpacket(data, size, NULL);
-    pdu_node_mk("S1AP", NULL, data, size);
-    pdu_node_mk("S1AP.S1AP-PDU", NULL, data, size);
+    pdu_node_t *root = pdu_node_mkpacket(data, size, NULL);
+    pdu_node_t *S1AP = pdu_node_mk(".S1AP", root, data, size);
+    pdu_node_t *S1AP_PDU = pdu_node_mk(".S1AP-PDU", S1AP, data, size);
 
     osi_s1ap_head_t *head = (void *)data;
     pdu_node_t      *s1ap = NULL;
 
     switch(head->pdu_code) {
-    case 0: s1ap = pdu_node_mk("S1AP.S1AP-PDU.initiatingMessage",   NULL, data, size);
+    case 0: s1ap = pdu_node_mk(".initiatingMessage",   S1AP_PDU, data, size);
             break;
-    case 1: s1ap = pdu_node_mk("S1AP.S1AP-PDU.successfulOutcome",   NULL, data, size);
+    case 1: s1ap = pdu_node_mk(".successfulOutcome",   S1AP_PDU, data, size);
             break;
-    case 2: s1ap = pdu_node_mk("S1AP.S1AP-PDU.unsuccessfulOutcome", NULL, data, size);
+    case 2: s1ap = pdu_node_mk(".unsuccessfulOutcome", S1AP_PDU, data, size);
             break;
     }
 
@@ -101,4 +101,7 @@ void s1ap_decode(char *data, uint16_t size, void *context)
     fprintf(stdout,
             "\t PDU code: %u, procedure code: %u, critically: %u, valsize: %u\n",
             head->pdu_code, head->procedure_code, critically, valsize);
+    fprintf(stdout, "\n");
+
+    pdu_node_trace(root);
 }
