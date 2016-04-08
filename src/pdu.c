@@ -39,23 +39,29 @@ pdu_node_mk      (char *name, pdu_node_t *parent, char *data, uint16_t size)
 
             if (dnode->datatype == DICT_DTYPE_HEX8) {
                 size = 1;
-                fprintf(stdout, "%x", (uint8_t)*data);
+                fprintf(stdout, "%x", *(uint8_t*)data);
             } else if (dnode->datatype == DICT_DTYPE_HEX16) {
                 size = 2;
-                fprintf(stdout, "%x", bswap_16((uint16_t)*data));
+                fprintf(stdout, "%x", bswap_16(*(uint16_t*)data));
+            } else if (dnode->datatype == DICT_DTYPE_HEX24) {
+                size = 4;
+                fprintf(stdout, "%x", bswap_32(*(uint32_t*)data) & 0xFFFFFF);
             } else if (dnode->datatype == DICT_DTYPE_HEX32) {
                 size = 4;
-                fprintf(stdout, "%x", bswap_32((uint32_t)*data));
+                fprintf(stdout, "%x", bswap_32(*(uint32_t*)data));
 
             } else if (dnode->datatype == DICT_DTYPE_UINT8) {
                 size = 1;
-                fprintf(stdout, "%u", (uint8_t)*data);
+                fprintf(stdout, "%u", *(uint8_t*)data);
             } else if (dnode->datatype == DICT_DTYPE_UINT16) {
                 size = 2;
-                fprintf(stdout, "%u", bswap_16((uint16_t)*data));
+                fprintf(stdout, "%u", bswap_16(*(uint16_t*)data));
+            } else if (dnode->datatype == DICT_DTYPE_UINT24) {
+                size = 4;
+                fprintf(stdout, "%u", bswap_32(*(uint32_t*)data) & 0xFFFFFF);
             } else if (dnode->datatype == DICT_DTYPE_UINT32) {
                 size = 4;
-                fprintf(stdout, "%u", bswap_32((uint32_t)*data));
+                fprintf(stdout, "%u", bswap_32(*(uint32_t*)data));
             }
 
             break;
