@@ -15,15 +15,13 @@ typedef struct osi_s1ap_head_s
 
 typedef struct osi_s1ap_valhead_s
 {
-    uint8_t  padding;
-    uint16_t items;
+    uint16_t  padding;
+    uint8_t   items;
 } osi_s1ap_valhead_t;
 
 typedef struct osi_s1ap_valitem_head_s
 {
     uint16_t id;
-    //uint16_t valsize:12;
-    //uint16_t critically:4;
     uint16_t critval;
 } osi_s1ap_valitem_head_t;
 
