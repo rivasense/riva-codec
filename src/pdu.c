@@ -89,7 +89,7 @@ pdu_node_mk__    (char *name, pdu_node_t *parent, char *data, uint16_t size)
 pdu_node_t *
 pdu_node_mk      (char *name, pdu_node_t *parent, char *data, uint16_t size)
 {
-    pdu_node_t *node = pdu_node_mk__(&name[1], parent, data, size);
+    pdu_node_t *node = pdu_node_mk__(name, parent, data, size);
     if (!node) {
         return NULL;
     }
@@ -100,7 +100,7 @@ pdu_node_mk      (char *name, pdu_node_t *parent, char *data, uint16_t size)
 pdu_node_t *
 pdu_node_mkbitset(char *name, pdu_node_t *parent, char *data, uint16_t bitfrom, uint16_t bitto)
 {
-    pdu_node_t *node = pdu_node_mk__(&name[1], parent, data, 0);
+    pdu_node_t *node = pdu_node_mk__(name, parent, data, 0);
     if (!node) {
         return NULL;
     }
