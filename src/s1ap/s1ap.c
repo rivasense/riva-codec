@@ -6,8 +6,8 @@
 #include "s1ap_dict.h"
 #include "s1ap_fields.h"
 
-static void
-decode_fields(char *data, uint16_t size, pdu_node_t *parent, uint8_t pcode)
+void
+s1ap_decode_fields(char *data, uint16_t size, pdu_node_t *parent, uint8_t pcode)
 {
     osi_s1ap_valhead_t *valhead = (void *)data;
 
@@ -43,7 +43,8 @@ decode_fields(char *data, uint16_t size, pdu_node_t *parent, uint8_t pcode)
     }
 }
 
-void s1ap_decode(char *data, uint16_t size, void *context)
+void
+s1ap_decode(char *data, uint16_t size, void *context)
 {
     pdu_dict_register(dict_nodes);
 
@@ -82,7 +83,7 @@ void s1ap_decode(char *data, uint16_t size, void *context)
     }
     S1AP_VALUE = pdu_node_mk(valname, S1AP_VALUE, (char*)(head + 1), valsize);
 
-    decode_fields((char*)(head + 1), valsize, S1AP_VALUE, head->procedure_code);
+    s1ap_decode_fields((char*)(head + 1), valsize, S1AP_VALUE, head->procedure_code);
 
     pdu_node_trace(root);
 }

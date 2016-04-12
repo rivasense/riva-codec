@@ -132,7 +132,7 @@ pdu_node_trace(pdu_node_t *node)
         } else if (node->val.type == DICT_DTYPE_HEX16) {
             fprintf(stdout, "%x", bswap_16(*(uint16_t*)node->val.data));
         } else if (node->val.type == DICT_DTYPE_HEX24) {
-            fprintf(stdout, "%x", bswap_32(*(uint32_t*)node->val.data) & 0xFFFFFF);
+            fprintf(stdout, "%x", bswap_32(*(uint32_t*)node->val.data)  >> 8 & 0xFFFFFF);
         } else if (node->val.type == DICT_DTYPE_HEX32) {
             fprintf(stdout, "%x", bswap_32(*(uint32_t*)node->val.data));
 
@@ -148,6 +148,16 @@ pdu_node_trace(pdu_node_t *node)
     }
 
     if (node->val.bitfrom || node->val.bitto) {
+        if (node->val.type == DICT_DTYPE_HEX8) {
+            fprintf(stdout, "%x  ", (BITSET_MID(*((uint8_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
+        } else if (node->val.type == DICT_DTYPE_HEX16) {
+            fprintf(stdout, "%x  ", (BITSET_MID(*((uint16_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
+        } else if (node->val.type == DICT_DTYPE_HEX32) {
+            fprintf(stdout, "%x",   (BITSET_MID(*((uint32_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
+        } else if (node->val.type == DICT_DTYPE_HEX64) {
+            fprintf(stdout, "%lx",  (BITSET_MID(*((uint64_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
+        }
+
         if (node->val.type == DICT_DTYPE_UINT8) {
             fprintf(stdout, "%u  ", (BITSET_MID(*((uint8_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
         } else if (node->val.type == DICT_DTYPE_UINT16) {
@@ -157,7 +167,6 @@ pdu_node_trace(pdu_node_t *node)
         } else if (node->val.type == DICT_DTYPE_UINT64) {
             fprintf(stdout, "%lu",  (BITSET_MID(*((uint64_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
         }
-
     }
 
     fprintf(stdout, "\n");

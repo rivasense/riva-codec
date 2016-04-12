@@ -2,6 +2,7 @@
 #define __S1AP_H__
 
 #include <stdint.h>
+#include "../pdu.h"
 
 #pragma pack(push, 1)
 
@@ -28,5 +29,7 @@ typedef struct osi_s1ap_valitem_head_s
 #pragma pack(pop)
 
 void s1ap_decode(char *data, uint16_t size, void *context);
+
+void s1ap_decode_fields(char *data, uint16_t size, pdu_node_t *parent, uint8_t pcode);
 
 #endif

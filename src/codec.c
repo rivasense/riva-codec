@@ -99,8 +99,12 @@ int main()
                 fprintf(stderr, "%s: unexpected eof at %d packet\n", fname, p_cnt);
             break;
         }
-        if (p_cnt == 1) {
-            s1ap_analyze(p_body, 16 * 4 + 2, 16 + 5);
+        //if (p_cnt == 1) {
+        //    s1ap_analyze(p_body, 16 * 4 + 2, 16 + 5);
+        //    break;
+        //}
+        if (p_cnt == 34) {
+            s1ap_analyze(p_body, 16 * 4 + 2, 16 * 2 + 8 + 3);
             break;
         }
     }

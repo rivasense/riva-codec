@@ -10,4 +10,20 @@ int s1ap_fields_getfunc(s1ap_decfield_func *decode_func,
                         uint8_t             procedure_code,
                         uint16_t            protocol_id);
 
+#pragma pack(push, 1)
+
+struct s1ap_43_UEPagingID {
+    uint8_t mmec;
+    uint8_t mmec_;
+    uint32_t mtmsi;
+};
+
+struct s1ap_46_TAIItem {
+    uint8_t  padding;
+    uint8_t  PLMNId[3];
+    uint16_t tAC;
+};
+
+#pragma pack(pop)
+
 #endif
