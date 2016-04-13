@@ -24,6 +24,20 @@ struct s1ap_46_TAIItem {
     uint16_t tAC;
 };
 
+struct s1ap_66_UEAggregateMaximumBitrate {
+    uint8_t   padding0;
+    uint32_t  uEaggregateMaximumBitRateDL;
+    uint8_t   padding1;
+    uint32_t  uEaggregateMaximumBitRateUL;
+};
+
+struct s1ap_99_UE_S1AP_IDs {
+    uint8_t   padding0;
+    uint32_t  mMe;
+    uint8_t   padding1;
+    uint16_t  eNB;
+};
+
 #pragma pack(pop)
 
 #endif

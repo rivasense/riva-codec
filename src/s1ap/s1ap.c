@@ -76,7 +76,8 @@ s1ap_decode(char *data, uint16_t size, void *context)
 
     switch (head->procedure_code) {
     case 10: valname = "Paging"; break;
-    case 23: valname = "UEContextReleaseComplete"; break;
+    case 21: valname = "UEContextModificationRequest"; break;
+    case 23: valname = "UEContextRelease"; break;
     }
     if (!valname) {
         return;

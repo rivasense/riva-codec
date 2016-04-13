@@ -19,8 +19,10 @@ dict_nodes[] = {
 
         {"value",               "",                        DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
 
-        {"Paging",                    "",                  DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
-        {"UEContextReleaseComplete",  "",                  DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
+        {"Paging",              "",                        DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
+        {"UEContextRelease",    "",                        DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
+        {"UEContextModificationRequest", "",               DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
+
         {"protocolIEs",               "",                  DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
         {"protocolIE-field",          "",                  DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
         {"protocolIE-SingleContainer","",                  DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
@@ -28,8 +30,12 @@ dict_nodes[] = {
         {"id",                     "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT16,true, NULL, NULL},
 
         /* ---- */
-        {"MME-UE-s1AP-ID",         "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT24,true, NULL, NULL},
-        {"ENB-UE-s1AP-ID",         "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT16,true, NULL, NULL},
+        {"MME-UE-S1AP-ID",         "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT32,true, NULL, NULL},
+        {"ENB-UE-S1AP-ID",         "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT16,true, NULL, NULL},
+
+        /* 2  */
+        {"Cause",                  "",                     DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
+        {"radioNetwork",           "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT8, true, NULL, NULL},
 
         /* 43 */
         {"UEPagingID",             "",                     DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
@@ -47,8 +53,17 @@ dict_nodes[] = {
         {"MCC",                    "",                     DICT_NTYPE_BITSET,  DICT_DTYPE_HEX16, true, NULL, NULL},
         {"MNC",                    "",                     DICT_NTYPE_BITSET,  DICT_DTYPE_HEX16, true, NULL, NULL},
 
+        /* 66 */
+        {"UEAggregateMaximumBitrate","",                   DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
+        {"uEaggregateMaximumBitRateDL","",                 DICT_NTYPE_FIELD,   DICT_DTYPE_UINT32, true, NULL, NULL},
+        {"uEaggregateMaximumBitRateUL","",                 DICT_NTYPE_FIELD,   DICT_DTYPE_UINT32, true, NULL, NULL},
+
         /* 80 */
         {"UEIdentityIndexValue",   "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_HEX16, true, NULL, NULL},
+
+        /* 99 */
+        {"UE_S1AP_IDs",            "",                     DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
+        {"uE-S1AP-ID-pair",        "",                     DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
 
         /* 109 */
         {"CNDomain",               "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT8, true, NULL, NULL},

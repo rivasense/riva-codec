@@ -103,10 +103,19 @@ int main()
         //    s1ap_analyze(p_body, 16 * 4 + 2, 16 + 5);
         //    break;
         //}
-        if (p_cnt == 34) {
-            s1ap_analyze(p_body, 16 * 4 + 2, 16 * 2 + 8 + 3);
+        if (p_cnt == 3) {
+            s1ap_analyze(p_body, 16 * 5 + 2, 16 + 9);
             break;
         }
+        //if (p_cnt == 13) {
+        //    s1ap_analyze(p_body, 16 * 5 + 2, 16 * 2 + 5);
+        //    break;
+        //}
+
+        //if (p_cnt == 34) {
+        //    s1ap_analyze(p_body, 16 * 4 + 2, 16 * 2 + 8 + 3);
+        //    break;
+        //}
     }
 
     fclose(stream);
