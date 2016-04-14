@@ -1,5 +1,7 @@
-#ifndef __CODEC_H__
-#define __CODEC_H__
+#ifndef __OSI_PROTO_H__
+#define __OSI_PROTO_H__
+
+#include <stdint.h>
 
 #pragma pack(push, 1)
 

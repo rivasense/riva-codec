@@ -22,7 +22,9 @@ set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_C_FLAGS_RELEASE "-Werror -O2 -DNDEBUG -fno-strict-aliasing")
 
 set(CODEC_SOURCE
-    src/codec.c src/pdu.c
+    src/codec.c
+    src/pdu.c
+    src/osi.c
     src/s1ap/s1ap.c
     src/s1ap/s1ap_fields.c
    )

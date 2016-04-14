@@ -1,6 +1,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "osi.h"
 #include "s1ap/s1ap.h"
 
 #pragma pack(push, 1)
@@ -60,6 +62,37 @@ int s1ap_analyze(char *pdata, uint16_t s1ap_off, uint16_t s1ap_sz)
     return 0;
 }
 
+int packet_analyze(char *data, uint32_t dsize)
+{
+    static sctp_chunk_t              *sctp_chunks;
+    static uint16_t                   sctp_chunks_c;
+    static uint16_t                   sctp_chunks_sz;
+
+    osi_packet_t   opacket;
+
+    memset(&opacket, 0, sizeof(opacket));
+    opacket.data  = data;
+    opacket.dsize = dsize;
+    opacket.sctp_chunks    = &sctp_chunks;
+    opacket.sctp_chunks_c  = &sctp_chunks_c;
+    opacket.sctp_chunks_sz = &sctp_chunks_sz;
+
+    osi_rise(&opacket, OSI_STACK_SIZE_MAX - 1);
+
+    for (int il = 0; (opacket.layers[il].proto != 0) && (il < OSI_STACK_SIZE_MAX); il++) {
+        if (opacket.layers[il].proto == OSI_PROTO_SCTP) {
+            for (int ichunk = 0; ichunk < *opacket.sctp_chunks_c; ichunk++) {
+
+                sctp_chunk_t *chunk = &(*opacket.sctp_chunks)[ichunk];
+                if ((*opacket.sctp_chunks)[ichunk].payload_proto_id == 18) {
+                    s1ap_analyze(data, chunk->offset, chunk->length);
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 int main()
 {
     const char *fname = "../s1ap.pcap";
@@ -99,23 +132,11 @@ int main()
                 fprintf(stderr, "%s: unexpected eof at %d packet\n", fname, p_cnt);
             break;
         }
-        //if (p_cnt == 1) {
-        //    s1ap_analyze(p_body, 16 * 4 + 2, 16 + 5);
-        //    break;
-        //}
+
         if (p_cnt == 3) {
-            s1ap_analyze(p_body, 16 * 5 + 2, 16 + 9);
+            packet_analyze(p_body, rechdr.ilen);
             break;
         }
-        //if (p_cnt == 13) {
-        //    s1ap_analyze(p_body, 16 * 5 + 2, 16 * 2 + 5);
-        //    break;
-        //}
-
-        //if (p_cnt == 34) {
-        //    s1ap_analyze(p_body, 16 * 4 + 2, 16 * 2 + 8 + 3);
-        //    break;
-        //}
     }
 
     fclose(stream);
