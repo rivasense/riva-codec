@@ -18,7 +18,7 @@ struct s1ap_43_UEPagingID {
     uint32_t mtmsi;
 };
 
-struct s1ap_46_TAIItem {
+struct s1ap_47_TAIItem {
     uint8_t  padding;
     uint8_t  PLMNId[3];
     uint16_t tAC;
@@ -31,11 +31,23 @@ struct s1ap_66_UEAggregateMaximumBitrate {
     uint32_t  uEaggregateMaximumBitRateUL;
 };
 
+struct s1ap_67_TAI {
+    uint8_t  padding;
+    uint8_t  PLMNId[3];
+    uint16_t tAC;
+};
+
 struct s1ap_99_UE_S1AP_IDs {
     uint8_t   padding0;
     uint32_t  mMe;
     uint8_t   padding1;
     uint16_t  eNB;
+};
+
+struct s1ap_100_EUTRAN_CGI {
+    uint8_t  padding;
+    uint8_t  PLMNId[3];
+    uint32_t cellID;
 };
 
 #pragma pack(pop)

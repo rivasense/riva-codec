@@ -20,6 +20,8 @@ dict_nodes[] = {
         {"value",               "",                        DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
 
         {"Paging",              "",                        DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
+        {"uplinkNASTransport",  "",                        DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
+        {"initialUEMessage",    "",                        DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
         {"UEContextRelease",    "",                        DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
         {"UEContextModificationRequest", "",               DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
 
@@ -58,6 +60,9 @@ dict_nodes[] = {
         {"uEaggregateMaximumBitRateDL","",                 DICT_NTYPE_FIELD,   DICT_DTYPE_UINT32, true, NULL, NULL},
         {"uEaggregateMaximumBitRateUL","",                 DICT_NTYPE_FIELD,   DICT_DTYPE_UINT32, true, NULL, NULL},
 
+        /* 67 */
+        {"TAI",                    "",                     DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
+
         /* 80 */
         {"UEIdentityIndexValue",   "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_HEX16, true, NULL, NULL},
 
@@ -65,8 +70,15 @@ dict_nodes[] = {
         {"UE_S1AP_IDs",            "",                     DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
         {"uE-S1AP-ID-pair",        "",                     DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
 
+        /* 100 */
+        {"EUTRAN-CGI",             "",                     DICT_NTYPE_SECTION, DICT_DTYPE_BYTES, true, NULL, NULL},
+        {"cell-ID",                "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_HEX32, true, NULL, NULL},
+
         /* 109 */
         {"CNDomain",               "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT8, true, NULL, NULL},
+
+        /* 134 */
+        {"RRC-Establishment-Cause","",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT8, true, NULL, NULL},
 
         {NULL,                  NULL,                      0,                  0,                true, NULL, NULL}
 };

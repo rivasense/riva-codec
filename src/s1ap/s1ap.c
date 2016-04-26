@@ -77,6 +77,8 @@ s1ap_decode(char *data, uint16_t size, void *context)
 
     switch (head->procedure_code) {
     case 10: valname = "Paging"; break;
+    case 12: valname = "initialUEMessage"; break;
+    case 13: valname = "uplinkNASTransport"; break;
     case 21: valname = "UEContextModificationRequest"; break;
     case 23: valname = "UEContextRelease"; break;
     }

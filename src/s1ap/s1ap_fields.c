@@ -74,7 +74,7 @@ pid_47_TAIItem(pdu_node_t *node, char *data, uint16_t size)
 {
     node = pdu_node_mk("TAIItem", node, data, size);
 
-    struct s1ap_46_TAIItem *titem = (void *)data;
+    struct s1ap_47_TAIItem *titem = (void *)data;
     pdu_node_mk("pLMNIdentity", node, (char *)&titem->PLMNId, 0);
     pdu_node_mk("tAC",          node, (char *)&titem->tAC, 0);
     // TODO: MCC, MNC here
@@ -89,6 +89,17 @@ pid_66_UEAggregateMaximumBitrate(pdu_node_t *node, char *data, uint16_t size)
     struct s1ap_66_UEAggregateMaximumBitrate *bt = (void *)data;
     pdu_node_mk("uEaggregateMaximumBitRateDL", node, (char *)&bt->uEaggregateMaximumBitRateDL, 0);
     pdu_node_mk("uEaggregateMaximumBitRateDL", node, (char *)&bt->uEaggregateMaximumBitRateUL, 0);
+}
+
+static void
+pid_67_TAI(pdu_node_t *node, char *data, uint16_t size)
+{
+    node = pdu_node_mk("TAI", node, data, size);
+
+    struct s1ap_67_TAI *tai = (void *)data;
+    pdu_node_mk("pLMNIdentity", node, (char *)&tai->PLMNId, 0);
+    pdu_node_mk("tAC",          node, (char *)&tai->tAC, 0);
+    // TODO: MCC, MNC here
 }
 
 static void
@@ -109,9 +120,26 @@ pid_99_UE_S1AP_IDs(pdu_node_t *node, char *data, uint16_t size)
 }
 
 static void
+pid_100_EUTRAN_CGI(pdu_node_t *node, char *data, uint16_t size)
+{
+    node = pdu_node_mk("EUTRAN-CGI", node, data, size);
+
+    struct s1ap_100_EUTRAN_CGI *eutran = (void *)data;
+    pdu_node_mk("pLMNIdentity", node, (char *)&eutran->PLMNId, 0);
+    pdu_node_mk("cell-ID", node, (char *)&eutran->cellID, 0);
+}
+
+static void
 pid_109_CNDomain(pdu_node_t *node, char *data, uint16_t size)
 {
     pdu_node_mk("CNDomain", node, (char*)data, 0);
+}
+
+static void
+pid_134_RRCEstablishmentCause(pdu_node_t *node, char *data, uint16_t size)
+{
+    pdu_node_mkbitset("RRC-Establishment-Cause", node, (char*)data, 4, 8);
+
 }
 
 int s1ap_fields_getfunc(s1ap_decfield_func *decode_func,
@@ -133,11 +161,17 @@ int s1ap_fields_getfunc(s1ap_decfield_func *decode_func,
         break;
     case 66: *decode_func = pid_66_UEAggregateMaximumBitrate;
         break;
+    case 67: *decode_func = pid_67_TAI;
+        break;
     case 80: *decode_func = pid_80_UEIdentityIndexValue;
         break;
     case 99: *decode_func = pid_99_UE_S1AP_IDs;
         break;
+    case 100: *decode_func = pid_100_EUTRAN_CGI;
+        break;
     case 109: *decode_func = pid_109_CNDomain;
+        break;
+    case 134: *decode_func = pid_134_RRCEstablishmentCause;
         break;
 
     default: *decode_func = NULL;
