@@ -71,6 +71,7 @@ int packet_analyze(char *data, uint32_t dsize)
     osi_packet_t   opacket;
 
     memset(&opacket, 0, sizeof(opacket));
+    sctp_chunks_c = 0;
     opacket.data  = data;
     opacket.dsize = dsize;
     opacket.sctp_chunks    = &sctp_chunks;

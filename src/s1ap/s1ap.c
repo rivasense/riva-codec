@@ -9,6 +9,7 @@
 void
 s1ap_decode_fields(char *data, uint16_t size, pdu_node_t *parent, uint8_t pcode)
 {
+    for (; *data; data++);
     osi_s1ap_valhead_t *valhead = (void *)data;
 
     if (valhead->items > 0) {
