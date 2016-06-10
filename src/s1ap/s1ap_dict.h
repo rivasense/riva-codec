@@ -32,7 +32,7 @@ dict_nodes[] = {
         {"id",                     "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT16,true, NULL, NULL},
 
         /* ---- */
-        {"MME-UE-S1AP-ID",         "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT32,true, NULL, NULL},
+        {"MME-UE-S1AP-ID",         "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT24,true, NULL, NULL},
         {"ENB-UE-S1AP-ID",         "",                     DICT_NTYPE_FIELD,   DICT_DTYPE_UINT16,true, NULL, NULL},
 
         /* 2  */

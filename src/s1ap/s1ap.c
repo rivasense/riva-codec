@@ -76,11 +76,54 @@ s1ap_decode(char *data, uint16_t size, void *context)
     char       *valname = NULL;
 
     switch (head->procedure_code) {
+    case  0: valname = "HandoverPreparation"; break;
+    case  1: valname = "HandoverResourceAllocation"; break;
+    case  2: valname = "HandoverNotification"; break;
+    case  3: valname = "PathSwitchRequest"; break;
+    case  4: valname = "HandoverCancel"; break;
+    case  5: valname = "E_RABSetup"; break;
+    case  6: valname = "E_RABModify"; break;
+    case  7: valname = "E_RABRelease"; break;
+    case  8: valname = "E_RABReleaseIndication"; break;
+    case  9: valname = "InitialContextSetup"; break;
     case 10: valname = "Paging"; break;
+    case 11: valname = "downlinkNASTransport"; break;
     case 12: valname = "initialUEMessage"; break;
     case 13: valname = "uplinkNASTransport"; break;
-    case 21: valname = "UEContextModificationRequest"; break;
+    case 14: valname = "Reset"; break;
+    case 15: valname = "ErrorIndication"; break;
+    case 16: valname = "NASNonDeliveryIndication"; break;
+    case 17: valname = "S1Setup"; break;
+    case 18: valname = "UEContextReleaseRequest"; break;
+    case 19: valname = "DownlinkS1cdma2000tunneling"; break;
+    case 20: valname = "UplinkS1cdma2000tunneling"; break;
+    case 21: valname = "UEContextModification"; break;
+    case 22: valname = "UECapabilityInfoIndication"; break;
     case 23: valname = "UEContextRelease"; break;
+    case 24: valname = "eNBStatusTransfer"; break;
+    case 25: valname = "MMEStatusTransfer"; break;
+    case 26: valname = "DeactivateTrace"; break;
+    case 27: valname = "TraceStart"; break;
+    case 28: valname = "TraceFailureIndication"; break;
+    case 29: valname = "ENBConfigurationUpdate"; break;
+    case 30: valname = "MMEConfigurationUpdate"; break;
+    case 31: valname = "LocationReportingControl"; break;
+    case 32: valname = "LocationReportingFailureIndication"; break;
+    case 33: valname = "LocationReport"; break;
+    case 34: valname = "OverloadStart"; break;
+    case 35: valname = "OverloadStop"; break;
+    case 36: valname = "WriteReplaceWarning"; break;
+    case 37: valname = "eNBDirectInformationTransfer"; break;
+    case 38: valname = "MMEDirectInformationTransfer"; break;
+    case 39: valname = "PrivateMessage"; break;
+    case 40: valname = "eNBConfigurationTransfer"; break;
+    case 41: valname = "MMEConfigurationTransfer"; break;
+    case 42: valname = "CellTrafficTrace"; break;
+    case 43: valname = "Kill"; break;
+    case 44: valname = "downlinkUEAssociatedLPPaTransport"; break;
+    case 45: valname = "uplinkUEAssociatedLPPaTransport"; break;
+    case 46: valname = "downlinkNonUEAssociatedLPPaTransport"; break;
+    case 47: valname = "uplinkNonUEAssociatedLPPaTransport"; break;
     }
     if (!valname) {
         return;
