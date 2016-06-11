@@ -26,7 +26,8 @@ set(CODEC_SOURCE
     src/pdu.c
     src/osi.c
     src/s1ap/s1ap.c
-    src/s1ap/s1ap_fields.c
+    src/s1ap/s1ap_dict.c
+    src/s1ap/s1ap_proto_ies.c
    )
 
 # Target:
