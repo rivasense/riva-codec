@@ -50,20 +50,33 @@ struct s1ap_100_EUTRAN_CGI {
 void
 pie_0_MME_UE_ID(pdu_node_t *node, char *data, uint16_t size)
 {
-    // TODO: fix (13)
-    pdu_node_mk("MME-UE-S1AP-ID", node, (char*)data, 0);
+#if 0
+    // _todo: fix (13)
+    // pdu_node_mk("MME-UE-S1AP-ID", node, (char*)data, 0);
+#endif
+
+    // 000 MME_UE_S1AP_ID                 1 pack;
 }
 
 void
 pie_1_HandoverType(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 001 HandoverType                       2224 pack;
 }
 
 void
 pie_2_Cause(pdu_node_t *node, char *data, uint16_t size)
 {
+#if 0
     node = pdu_node_mk("Cause", node, data, size);
     pdu_node_mk("radioNetwork", node, data, 0);
+#endif
+
+    //002 Cause                          3 pack;
+    //002 CauseRadioNetwork              3 pack;
+    //002 nas                          629 pack;
+    //002 protocol (Cause)            1932 pack;
+    //002 transport (Cause)           4052 pack;
 }
 
 void
@@ -74,6 +87,11 @@ pie_3_SourceID(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_4_TargetID(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 004 lAC                                2224 pack;
+    // 004 macroENB_ID / homeENB_ID           2797 pack;
+    // 004 rAC                                2224 pack;
+    // 004 rNC_ID                             2224 pack;
+    // 004 TAC / tAC                          2797 pack;
 }
 
 /* pid 5: unknown
@@ -84,8 +102,12 @@ pie_4_TargetID(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_8_ENB_UE_ID(pdu_node_t *node, char *data, uint16_t size)
 {
-    // TODO: fix (13)
+#if 0
+    // _TODO: fix (13)
     pdu_node_mk("ENB-UE-S1AP-ID", node, (char*)data, 0);
+#endif
+
+    // 008 ENB_UE_S1AP_ID                        1 pack;
 }
 
 /* pid  9: unknown
@@ -106,11 +128,14 @@ pie_13_ERABtoReleaseListHOCmd(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_14_ERABDataForwardingItem(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 014 e_RAB_ID                           1584 pack;
+    // 014 gTP_TEID                           2584 pack;
 }
 
 void
 pie_15_ERABReleaseItemBearerRelComp(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 015 e_RAB_ID dissect                   5712 pack;
 }
 
 void
@@ -121,6 +146,9 @@ pie_16_ERABToBeSetupListBearerSUReq(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_17_ERABToBeSetupItemBearerSUReq(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 017 e_RAB_ID                      18464 pack;
+    // 017 gTP_TEID                          18464 pack;
+    // 017 qCI                               18464 pack;
 }
 
 void
@@ -136,6 +164,8 @@ pie_19_ERABFailedToSetupListHOReqAck(pdu_node_t *node, char *data, uint16_t size
 void
 pie_20_RABAdmittedItem(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 020 e_RAB_ID                           2815 pack;
+    // 020 gTP_TEID                           2815 pack;
 }
 
 void
@@ -146,16 +176,21 @@ pie_21_ERABFailedtoSetupItemHOReqAck(pdu_node_t *node, char *data, uint16_t size
 void
 pie_22_ERABToBeSwitchedDLList(pdu_node_t *node, char *data, uint16_t size)
 {
+    // container 22 -> 23
 }
 
 void
 pie_23_ERABToBeSwitchedDLItem(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 023 e_RAB_ID                           2546 pack;
+    // 023 gTP_TEID                           2546 pack;
+
 }
 
 void
 pie_24_ERABToBeSetupListCtxtSUReq(pdu_node_t *node, char *data, uint16_t size)
 {
+    // container 24 -> 52
 }
 
 void
@@ -171,16 +206,21 @@ pie_26_NAS_PDU(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_27_ERABToBeSetupItemHOReq(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 027 e_RAB_ID                           2813 pack;
+    // 027 gTP_TEID                           2813 pack;
+    // 027 qCI                                2813 pack;
 }
 
 void
 pie_28_ERABSetupListBearerSURes(pdu_node_t *node, char *data, uint16_t size)
 {
+    // container 28 -> 27
 }
 
 void
 pie_29_ERABFailedToSetupListBearerSURes(pdu_node_t *node, char *data, uint16_t size)
 {
+    // container 29 -> 27
 }
 
 void
@@ -201,26 +241,34 @@ pie_32_ERABFailedToModifyList(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_33_ERABToBeReleasedList(pdu_node_t *node, char *data, uint16_t size)
 {
+    // container 33 -> 35
 }
 
 void
 pie_34_ERABFailedToReleaseList(pdu_node_t *node, char *data, uint16_t size)
 {
+    // container 34 -> 35
 }
 
 void
 pie_35_ERABItem(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 035 Cause                              5707 pack;
+    // 035 e_RAB_ID                           5707 pack;
+    // 035 nas                                5707 pack;
 }
 
 void
 pie_36_ERABToBeModifiedItemBearerModReq(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 036 e_RAB_ID                           1927 pack;
+    // 036 qCI                                1927 pack;
 }
 
 void
 pie_37_ERABModifyItemBearerModRes(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 037 e_RAB_ID                           1927 pack;
 }
 
 void
@@ -231,6 +279,9 @@ pie_38_ERABReleaseItem(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_39_ERABSetupItemBearerSURes(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 039 e_RAB_ID                          18646 pack;
+    // 039 gTP_TEID                          18646 pack;
+
 }
 
 void
@@ -250,12 +301,18 @@ pie_41_HandoverRestrictionList(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_43_UEPagingID(pdu_node_t *node, char *data, uint16_t size)
 {
+#if 0
     node = pdu_node_mk("UEPagingID", node, data, size);
     node = pdu_node_mk("s-TMSI",     node, data, size);
 
     struct s1ap_43_UEPagingID *field = (void *)data;
     pdu_node_mk("mMEC",   node, (char*)&field->mmec, 0);
     pdu_node_mk("m-TMSI", node, (char*)&field->mtmsi, 0);
+#endif
+
+    // 043 mME_Code                             34 pack;
+    // 043 m_TMSI                               34 pack;
+
 }
 
 void
@@ -270,6 +327,7 @@ pie_44_pagingDRX(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_46_TAIList(pdu_node_t *node, char *data, uint16_t size)
 {
+#if 0
     uint8_t *items = (void *)data;
     node = pdu_node_mk("TAIList", node, data, size);
     data++; size--;
@@ -296,17 +354,22 @@ pie_46_TAIList(pdu_node_t *node, char *data, uint16_t size)
 
         data += valsize;
     }
+#endif
 }
 
 void
 pie_47_TAIItem(pdu_node_t *node, char *data, uint16_t size)
 {
+#if 0
     node = pdu_node_mk("TAIItem", node, data, size);
 
     struct s1ap_47_TAIItem *titem = (void *)data;
     pdu_node_mk("pLMNIdentity", node, (char *)&titem->PLMNId, 0);
     pdu_node_mk("tAC",          node, (char *)&titem->tAC, 0);
     // TODO: MCC, MNC here
+#endif
+
+    // 047 TAC / tAC                            34 pack;
 }
 
 void
@@ -322,16 +385,23 @@ pie_49_ERABReleaseItemHOCmd(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_50_ERABSetupItemCtxtSURes(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 050 e_RAB_ID                              5 pack;
+    // 050 gTP_TEID                              5 pack;
 }
 
 void
 pie_51_ERABSetupListCtxtSURes(pdu_node_t *node, char *data, uint16_t size)
 {
+    // constainer 51 -> 50
 }
 
 void
 pie_52_ERABToBeSetupItemCtxtSUReq(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 052 e_RAB_ID                             21 pack;
+    // 052 gTP_TEID                             21 pack;
+    // 052 qCI                                  21 pack;
+
 }
 
 void
@@ -365,6 +435,7 @@ pie_58_CriticalityDiagnostics(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_59_Global_ENB_ID(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 059 macroENB_ID / homeENB_ID dissect  28813 pack;
 }
 
 void
@@ -389,6 +460,7 @@ pie_63_ServedPLMNs(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_64_SupportedTAs(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 064 TAC / tAC                         28813 pack;
 }
 
 void
@@ -399,22 +471,28 @@ pie_65_TimeToWait(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_66_UEAggregateMaximumBitrate(pdu_node_t *node, char *data, uint16_t size)
 {
+#if 0
     node = pdu_node_mk("UEAggregateMaximumBitrate", node, data, size);
 
     struct s1ap_66_UEAggregateMaximumBitrate *bt = (void *)data;
     pdu_node_mk("uEaggregateMaximumBitRateDL", node, (char *)&bt->uEaggregateMaximumBitRateDL, 0);
     pdu_node_mk("uEaggregateMaximumBitRateDL", node, (char *)&bt->uEaggregateMaximumBitRateUL, 0);
+#endif
+    // 066 bitrate                               2 pack;
 }
 
 void
 pie_67_TAI(pdu_node_t *node, char *data, uint16_t size)
 {
+#if 0
     node = pdu_node_mk("TAI", node, data, size);
 
     struct s1ap_67_TAI *tai = (void *)data;
     pdu_node_mk("pLMNIdentity", node, (char *)&tai->PLMNId, 0);
     pdu_node_mk("tAC",          node, (char *)&tai->tAC, 0);
-    // TODO: MCC, MNC here
+    // _TODO: MCC, MNC here
+#endif
+    // 067 TAC / tAC                             8 pack;
 }
 
 /*
@@ -464,6 +542,9 @@ pie_75_GUMMEI_ID(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_78_ERABInformationListItem(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 078 cell_ID                            2797 pack;
+    // 078 e_RAB_ID                           2797 pack;
+
 }
 
 void
@@ -474,7 +555,9 @@ pie_79_DirectForwardingPathAvailability(pdu_node_t *node, char *data, uint16_t s
 void
 pie_80_UEIdentityIndexValue(pdu_node_t *node, char *data, uint16_t size)
 {
+#if 0
     pdu_node_mk("UEIdentityIndexValue", node, (char*)data, 0);
+#endif
 }
 
 /*
@@ -514,11 +597,13 @@ pie_88_SourceMME_UE_S1AP_ID(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_89_BearersSubjectToStatusTransferItem(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 089 e_RAB_ID                           2821 pack;
 }
 
 void
 pie_90_eNB_StatusTransferTransparentContainer(pdu_node_t *node, char *data, uint16_t size)
 {
+    // container 90 -> 89
 }
 
 void
@@ -539,16 +624,22 @@ pie_93_UE_associatedLogicalS1ConnectionListResAck(pdu_node_t *node, char *data, 
 void
 pie_94_ERABToBeSwitchedULItem(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 094 e_RAB_ID                           2567 pack;
+    // 094 gTP_TEID                           2567 pack
+
 }
 
 void
 pie_95_ERABToBeSwitchedULList(pdu_node_t *node, char *data, uint16_t size)
 {
+    //  container 95 -> 94
 }
 
 void
 pie_96_STMSI(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 096 mME_Code                             16 pack;
+    // 096 m_TMSI                               16 pack;
 }
 
 void
@@ -564,22 +655,30 @@ pie_98_RequestType(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_99_UE_S1AP_IDs(pdu_node_t *node, char *data, uint16_t size)
 {
+#if 0
     node = pdu_node_mk("UE_S1AP_IDs", node, data, size);
     node = pdu_node_mk("uE-S1AP-ID-pair", node, data, size);
 
     struct s1ap_99_UE_S1AP_IDs *ids = (void *)data;
     pdu_node_mk("MME-UE-S1AP-ID", node, (char *)&ids->mMe, 0);
     pdu_node_mk("ENB-UE-S1AP-ID", node, (char *)&ids->eNB, 0);
+#endif
+    // 099 ENB_UE_S1AP_ID                        3 pack;
+    // 099 MME_UE_S1AP_ID                        3 pack;
+
 }
 
 void
 pie_100_EUTRAN_CGI(pdu_node_t *node, char *data, uint16_t size)
 {
+#if 0
     node = pdu_node_mk("EUTRAN-CGI", node, data, size);
 
     struct s1ap_100_EUTRAN_CGI *eutran = (void *)data;
     pdu_node_mk("pLMNIdentity", node, (char *)&eutran->PLMNId, 0);
     pdu_node_mk("cell-ID", node, (char *)&eutran->cellID, 0);
+#endif
+    // 100 cell_ID                               8 pack;
 }
 
 void
@@ -600,11 +699,14 @@ pie_103_ERABFailedToBeReleasedList(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_104_SourceToTargetTransparentContainer(pdu_node_t *node, char *data, uint16_t size)
 {
+    // container ?? RABInformationListInfo (??)
 }
 
 void
 pie_105_ServedGUMMEIs(pdu_node_t *node, char *data, uint16_t size)
 {
+    // 105 mME_Code                      29724 pack;
+    // 105 mME_Group_ID                      29724 pack;
 }
 
 void
@@ -625,7 +727,10 @@ pie_108_CSFallbackIndicator(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_109_CNDomain(pdu_node_t *node, char *data, uint16_t size)
 {
+#if 0
     pdu_node_mk("CNDomain", node, (char*)data, 0);
+#endif
+    // 109 CNDomain                             34 pack;
 }
 
 void
@@ -751,8 +856,10 @@ pie_133_MSClassmark3(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_134_RRCEstablishmentCause(pdu_node_t *node, char *data, uint16_t size)
 {
+#if 0
     pdu_node_mkbitset("RRC-Establishment-Cause", node, (char*)data, 4, 8);
-
+#endif
+    // 134 RRC_Establishment_Cause              10 pack;
 }
 
 void
