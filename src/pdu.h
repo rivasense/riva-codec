@@ -5,58 +5,52 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define DICT_NTYPE_PDU          0x00
-#define DICT_NTYPE_PROTO        0x01
-#define DICT_NTYPE_SECTION      0x02
-#define DICT_NTYPE_FIELD        0x03
-#define DICT_NTYPE_BITSET       0x04
+/*
+ * PDU FIELD TYPES
+ */
+#define PDU_FT_UINT8        0x01
+#define PDU_FT_UINT16       0x02
+#define PDU_FT_UINT24       0x03
+#define PDU_FT_UINT32       0x04
+#define PDU_FT_UINT40       0x05
+#define PDU_FT_UINT48       0x06
+#define PDU_FT_UINT56       0x07
+#define PDU_FT_UINT64       0x08
 
-#define DICT_DTYPE_UINT8        0x01
-#define DICT_DTYPE_UINT16       0x02
-#define DICT_DTYPE_UINT24       0x03
-#define DICT_DTYPE_UINT32       0x04
-#define DICT_DTYPE_UINT40       0x05
-#define DICT_DTYPE_UINT48       0x06
-#define DICT_DTYPE_UINT56       0x07
-#define DICT_DTYPE_UINT64       0x08
+#define PDU_FT_HEX8         0x11
+#define PDU_FT_HEX16        0x12
+#define PDU_FT_HEX24        0x13
+#define PDU_FT_HEX32        0x14
+#define PDU_FT_HEX40        0x15
+#define PDU_FT_HEX48        0x16
+#define PDU_FT_HEX56        0x17
+#define PDU_FT_HEX64        0x18
 
-#define DICT_DTYPE_HEX8         0x11
-#define DICT_DTYPE_HEX16        0x12
-#define DICT_DTYPE_HEX24        0x13
-#define DICT_DTYPE_HEX32        0x14
-#define DICT_DTYPE_HEX40        0x15
-#define DICT_DTYPE_HEX48        0x16
-#define DICT_DTYPE_HEX56        0x17
-#define DICT_DTYPE_HEX64        0x18
+#define PDU_FT_BYTES        0x20
+#define PDU_FT_CHAR         0x30
+#define PDU_FT_BITSET       0x40
 
-#define DICT_DTYPE_BYTES        0x20
-#define DICT_DTYPE_CHAR         0x30
-#define DICT_DTYPE_BITSET       0x40
+/*
+ * PDU FIELD FLAGS
+ */
+#define PDU_FF_FIELD        0x00
+#define PDU_FF_BITSET       0x01
+#define PDU_FF_SECTION      0x02
+#define PDU_FF_PROTO        0x03
+#define PDU_FF_PDU          0x04
+
+/*
+ *
+ */
+typedef struct pdu_field  pdu_field_t;
+struct pdu_field {
+    char       *name;
+    uint32_t    type;
+    uint64_t    mask;
+    uint64_t    flags;
+};
 
 typedef struct pdu_node  pdu_node_t;
-typedef struct dict_code dict_code_t;
-typedef struct dict_node dict_node_t;
-
-typedef void (*dict_decode_func)(pdu_node_t *node, FILE *output);
-
-struct dict_code {
-    uint64_t     code;
-    char        *name;
-};
-
-struct dict_node {
-    char             *name;
-    char             *description;
-    uint32_t          nodetype;
-    uint32_t          datatype;
-    bool              visibility;
-    dict_code_t      *codes;
-    dict_decode_func  decode_func;
-};
-
-void
-pdu_dict_register(dict_node_t *nodes);
-
 struct pdu_node {
     char        *name;
     char        *description;
@@ -76,14 +70,14 @@ struct pdu_node {
     } val;
 };
 
+void
+pdu_fields_register(pdu_field_t *fields);
+
 pdu_node_t *
 pdu_node_mkpacket(char *data, uint16_t size, void *context);
 
 pdu_node_t *
-pdu_node_mk      (char *name, pdu_node_t *parent, char *data, uint16_t size);
-
-pdu_node_t *
-pdu_node_mkbitset(char *name, pdu_node_t *parent, char *data, uint16_t bitfrom, uint16_t bitto);
+pdu_node_mk      (char *name, pdu_node_t *parent, ... );
 
 pdu_node_t *
 pdu_node_get_root(void *context);

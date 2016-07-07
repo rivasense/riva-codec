@@ -52,8 +52,6 @@ void pie_37_ERABModifyItemBearerModRes      (pdu_node_t *node, char *data, uint1
 void pie_38_ERABReleaseItem                 (pdu_node_t *node, char *data, uint16_t size);
 void pie_39_ERABSetupItemBearerSURes        (pdu_node_t *node, char *data, uint16_t size);
 
-
-
 void pie_40_SecurityContext                 (pdu_node_t *node, char *data, uint16_t size);
 void pie_41_HandoverRestrictionList         (pdu_node_t *node, char *data, uint16_t size);
 /*   pie_42: unknown */
@@ -94,8 +92,6 @@ void pie_75_GUMMEI_ID                       (pdu_node_t *node, char *data, uint1
 void pie_78_ERABInformationListItem         (pdu_node_t *node, char *data, uint16_t size);
 void pie_79_DirectForwardingPathAvailability(pdu_node_t *node, char *data, uint16_t size);
 
-
-
 void pie_80_UEIdentityIndexValue            (pdu_node_t *node, char *data, uint16_t size);
 /*   pie_81: unknown */
 /*   pie_82: unknown */
@@ -135,8 +131,6 @@ void pie_116_WarningType                    (pdu_node_t *node, char *data, uint1
 void pie_117_WarningSecurityInfo            (pdu_node_t *node, char *data, uint16_t size);
 void pie_118_DataCodingScheme               (pdu_node_t *node, char *data, uint16_t size);
 void pie_119_WarningMessageContents         (pdu_node_t *node, char *data, uint16_t size);
-
-
 
 void pie_120_BroadcastCompletedAreaList     (pdu_node_t *node, char *data, uint16_t size);
 void pie_121_InterSystemInformationTransferTypeEDT(pdu_node_t *node, char *data, uint16_t size);

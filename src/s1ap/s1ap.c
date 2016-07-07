@@ -27,8 +27,8 @@ s1ap_decode_fields(char *data, uint16_t size, pdu_node_t *parent, uint8_t pcode)
             pdu_node_t *ie_item = pdu_node_mk("protocolIE-field",
                     ie_items, (char*)(valhead+1), size - sizeof(*valhead));
             pdu_node_mk("id", ie_item, (char*)&valitem->id, 0);
-            pdu_node_mkbitset("critically", ie_item, (char *)&valitem->critval, 6, 8);
-            pdu_node_mkbitset("valueSize",  ie_item, (char *)&valitem->critval, 8, 16);
+            pdu_node_mk("critically", ie_item, (char *)&valitem->critval, 6, 8);
+            pdu_node_mk("valueSize",  ie_item, (char *)&valitem->critval, 8, 16);
 
             data += sizeof(*valitem);
             s1ap_pie_func decode_func = s1ap_pies[bswap_16(valitem->id)].func;
@@ -47,7 +47,7 @@ s1ap_decode_fields(char *data, uint16_t size, pdu_node_t *parent, uint8_t pcode)
 void
 s1ap_decode(char *data, uint16_t size, void *context)
 {
-    pdu_dict_register(dict_nodes);
+    pdu_fields_register(s1ap_fields);
 
     pdu_node_t *root = pdu_node_mkpacket(data, size, NULL);
     pdu_node_t *S1AP = pdu_node_mk("S1AP", root, data, size);
@@ -64,10 +64,10 @@ s1ap_decode(char *data, uint16_t size, void *context)
             break;
     }
 
-    pdu_node_mkbitset("pduType",    S1AP_PDU, (char *)head, 5, 8);
-    pdu_node_mk("procedureCode",    S1AP_PDU, (char *)&head->procedure_code, 0);
-    pdu_node_mkbitset("critically", S1AP_PDU, (char *)&head->critval, 0, 4);
-    pdu_node_mkbitset("valueSize",  S1AP_PDU, (char *)&head->critval, 8, 16);
+    pdu_node_mk("pduType",       S1AP_PDU, (char *)head, 5, 8);
+    pdu_node_mk("procedureCode", S1AP_PDU, (char *)&head->procedure_code, 0);
+    pdu_node_mk("critically",    S1AP_PDU, (char *)&head->critval, 0, 4);
+    pdu_node_mk("valueSize",     S1AP_PDU, (char *)&head->critval, 8, 16);
 
     //uint16_t critically     = bswap_16(head->critval) >> 14;
     uint16_t valsize        = bswap_16(head->critval) & 0xFFF;

@@ -4,7 +4,7 @@
 #include "../pdu.h"
 #include "s1ap_proto_ies.h"
 
-extern struct dict_node   dict_nodes[];
+extern pdu_field_t        s1ap_fields[];
 
 extern s1ap_pie_t         s1ap_pies[];
 extern const size_t       s1ap_sz;
