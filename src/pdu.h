@@ -39,6 +39,14 @@
 #define PDU_FF_PROTO        0x03
 #define PDU_FF_PDU          0x04
 
+
+/*
+ * PDU NODE CURSOR POSITION
+ */
+#define PDU_CURSOR_SET      0x00
+#define PDU_CURSOR_CUR      0x01
+#define PDU_CURSOR_END      0x02
+
 /*
  *
  */
@@ -65,24 +73,41 @@ struct pdu_node {
         uint16_t     size;      // data size in bytes
         uint16_t     bitfrom;   //
         uint16_t     bitto;     //
-        void        *encoder;   // encoder method
-        void        *decoder;   // decoder method
     } val;
 };
 
 void
-pdu_fields_register(pdu_field_t *fields);
+pdu_fields_register (pdu_field_t *fields);
 
 pdu_node_t *
-pdu_node_mkpacket(char *data, uint16_t size, void *context);
-
-pdu_node_t *
-pdu_node_mk      (char *name, pdu_node_t *parent, ... );
-
-pdu_node_t *
-pdu_node_get_root(void *context);
+pdu_node_get_root   (void *context);
 
 void
-pdu_node_trace(pdu_node_t *node);
+pdu_node_trace      (pdu_node_t *node);
+
+pdu_node_t *
+pdu_node_mkpacket   (char *data, uint16_t size, void *context);
+
+char *
+pdu_node_cursor     (pdu_node_t *parent, int offset, int position);
+
+
+
+pdu_node_t *
+pdu_node_mk         (char *name, pdu_node_t *parent, ... );
+
+pdu_node_t *
+pdu_node_mknext     (char *name, pdu_node_t *parent, ... );
+
+pdu_node_t *
+pdu_node_mkdata     (char *name, pdu_node_t *parent, char *data, ... );
+
+pdu_node_t *
+pdu_node_mksize     (char *name, pdu_node_t *parent, size_t *size, ... );
+
+pdu_node_t *
+pdu_node_mkdatasize (char *name, pdu_node_t *parent, char *data, size_t size, ... );
+
+
 
 #endif

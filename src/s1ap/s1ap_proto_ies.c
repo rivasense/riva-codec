@@ -52,7 +52,7 @@ pie_0_MME_UE_ID(pdu_node_t *node, char *data, uint16_t size)
 {
 #if 0
     // _todo: fix (13)
-    // pdu_node_mk("MME-UE-S1AP-ID", node, (char*)data, 0);
+    // pdu_node_mknext("MME-UE-S1AP-ID", node, (char*)data, 0);
 #endif
 
     pdu_node_mk("MME-UE-S1AP-ID", node);

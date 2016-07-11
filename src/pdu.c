@@ -14,92 +14,19 @@ static pdu_field_t         *pdu_dict;
 #define BITSET_MID(k,m,n) BITSET_LAST((k)>>(m),((n)-(m)))
 
 void
-pdu_fields_register(pdu_field_t *fields)
+pdu_fields_register (pdu_field_t *fields)
 {
     pdu_dict = fields;
 }
 
 pdu_node_t *
-pdu_node_mkpacket(char *data, uint16_t size, void *context)
-{
-    memset(pdu_tree.nodes, 0, sizeof(pdu_tree.nodes[0]) * pdu_tree.cursor);
-    pdu_tree.cursor = 0;
-
-    pdu_node_t *pnode = &pdu_tree.nodes[pdu_tree.cursor++];
-
-    pnode->name        = "PDU";
-    pnode->description = "";
-    pnode->type        = PDU_FF_PDU;
-    pnode->visibility  = true;
-    pnode->val.type    = PDU_FT_BYTES;
-    pnode->val.data    = data;
-    pnode->val.size    = size;
-
-    return pnode;
-}
-
-
-static pdu_node_t *
-pdu_node_mk__    (char *name, pdu_node_t *parent, char *data, uint16_t size)
-{
-    pdu_field_t *dnode = pdu_dict;
-    for (; dnode->name; dnode++) {
-        if (strcmp(name, dnode->name) == 0) {
-
-            pdu_node_t *pnode = &pdu_tree.nodes[pdu_tree.cursor++];
-            if (!parent->child_f || !parent->child_l) {
-                parent->child_f = parent->child_l = pnode;
-            } else {
-                parent->child_l->next = pnode;
-                parent->child_l = pnode;
-            }
-
-            pnode->name        = dnode->name;
-            pnode->val.data    = data;
-            pnode->val.size    = size;
-
-            if (dnode->type == PDU_FT_HEX8) {
-                pnode->val.size = 1;
-            } else if (dnode->type == PDU_FT_HEX16) {
-                pnode->val.size = 2;
-            } else if (dnode->type == PDU_FT_HEX24) {
-                pnode->val.size = 4;
-            } else if (dnode->type == PDU_FT_HEX32) {
-                pnode->val.size = 4;
-            } else if (dnode->type == PDU_FT_UINT8) {
-                pnode->val.size = 1;
-            } else if (dnode->type == PDU_FT_UINT16) {
-                pnode->val.size = 2;
-            } else if (dnode->type == PDU_FT_UINT24) {
-                pnode->val.size = 4;
-            } else if (dnode->type == PDU_FT_UINT32) {
-                pnode->val.size = 4;
-            }
-
-            return pnode;
-        }
-    }
-    return NULL;
-}
-
-pdu_node_t *
-pdu_node_mk      (char *name, pdu_node_t *parent, ... )
-{
-    pdu_node_t *node = pdu_node_mk__(name, parent, NULL, 0);
-    if (!node) {
-        return NULL;
-    }
-    return node;
-}
-
-pdu_node_t *
-pdu_node_get_root(void *context)
+pdu_node_get_root   (void *context)
 {
     return &pdu_tree.nodes[0];
 }
 
 void
-pdu_node_trace(pdu_node_t *node)
+pdu_node_trace      (pdu_node_t *node)
 {
     static int padding;
 
@@ -163,4 +90,110 @@ pdu_node_trace(pdu_node_t *node)
         pdu_node_trace(node->next);
     }
 }
+
+pdu_node_t *
+pdu_node_mkpacket   (char *data, uint16_t size, void *context)
+{
+    memset(pdu_tree.nodes, 0, sizeof(pdu_tree.nodes[0]) * pdu_tree.cursor);
+    pdu_tree.cursor = 0;
+
+    pdu_node_t *pnode = &pdu_tree.nodes[pdu_tree.cursor++];
+
+    pnode->name        = "PDU";
+    pnode->description = "";
+    pnode->type        = PDU_FF_PDU;
+    pnode->visibility  = true;
+    pnode->val.type    = PDU_FT_BYTES;
+    pnode->val.data    = data;
+    pnode->val.size    = size;
+
+    return pnode;
+}
+
+char *
+pdu_node_cursor     (pdu_node_t *parent, int offset, int position)
+{
+    return NULL;
+}
+
+
+
+
+static pdu_node_t *
+pdu_node_mk__    (char *name, pdu_node_t *parent, char *data, uint16_t size)
+{
+    pdu_field_t *dnode = pdu_dict;
+    for (; dnode->name; dnode++) {
+        if (strcmp(name, dnode->name) == 0) {
+
+            pdu_node_t *pnode = &pdu_tree.nodes[pdu_tree.cursor++];
+            if (!parent->child_f || !parent->child_l) {
+                parent->child_f = parent->child_l = pnode;
+            } else {
+                parent->child_l->next = pnode;
+                parent->child_l = pnode;
+            }
+
+            pnode->name        = dnode->name;
+            pnode->val.data    = data;
+            pnode->val.size    = size;
+
+            if (dnode->type == PDU_FT_HEX8) {
+                pnode->val.size = 1;
+            } else if (dnode->type == PDU_FT_HEX16) {
+                pnode->val.size = 2;
+            } else if (dnode->type == PDU_FT_HEX24) {
+                pnode->val.size = 4;
+            } else if (dnode->type == PDU_FT_HEX32) {
+                pnode->val.size = 4;
+            } else if (dnode->type == PDU_FT_UINT8) {
+                pnode->val.size = 1;
+            } else if (dnode->type == PDU_FT_UINT16) {
+                pnode->val.size = 2;
+            } else if (dnode->type == PDU_FT_UINT24) {
+                pnode->val.size = 4;
+            } else if (dnode->type == PDU_FT_UINT32) {
+                pnode->val.size = 4;
+            }
+
+            return pnode;
+        }
+    }
+    return NULL;
+}
+
+pdu_node_t *
+pdu_node_mk         (char *name, pdu_node_t *parent, ... )
+{
+    pdu_node_t *node = pdu_node_mk__(name, parent, NULL, 0);
+    if (!node) {
+        return NULL;
+    }
+    return node;
+}
+
+pdu_node_t *
+pdu_node_mknext     (char *name, pdu_node_t *parent, ... )
+{
+    return NULL;
+}
+
+pdu_node_t *
+pdu_node_mkdata     (char *name, pdu_node_t *parent, char *data, ... )
+{
+    return NULL;
+}
+
+pdu_node_t *
+pdu_node_mksize     (char *name, pdu_node_t *parent, size_t *size, ... )
+{
+    return NULL;
+}
+
+pdu_node_t *
+pdu_node_mkdatasize (char *name, pdu_node_t *parent, char *data, size_t size, ... )
+{
+    return NULL;
+}
+
 
