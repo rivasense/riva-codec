@@ -43,9 +43,11 @@
 /*
  * PDU NODE CURSOR POSITION
  */
-#define PDU_CURSOR_SET      0x00
-#define PDU_CURSOR_CUR      0x01
-#define PDU_CURSOR_END      0x02
+#define PDU_CURSOFF_NONE    0x00
+#define PDU_CURSOFF_BEGIN   0x01
+#define PDU_CURSOFF_END     0x02
+#define PDU_CURSOFF_INC     0x03
+#define PDU_CURSOFF_DEC     0x04
 
 /*
  *
@@ -61,18 +63,18 @@ struct pdu_field {
 typedef struct pdu_node  pdu_node_t;
 struct pdu_node {
     char        *name;
-    char        *description;
-    bool         visibility;
-    uint32_t     type;          // (proto, section, field, subfield)
     pdu_node_t  *next;          // next node at same level
     pdu_node_t  *child_f;       // first child
     pdu_node_t  *child_l;       // last  child
     struct pdu_node_value {
-        uint32_t     type;      // (uint8/uint16/uint32/uint64/ .... hex(...) ... byte ... char ... bitset)
+        uint32_t     type;      // field type
+        uint64_t     flags;     // field flags
         char        *data;      // data begin pointer
         uint16_t     size;      // data size in bytes
-        uint16_t     bitfrom;   //
-        uint16_t     bitto;     //
+        uint64_t     mask;
+        uint16_t     mask_offset;
+        uint16_t     mask_bitlen;
+        uint16_t     cursor;
     } val;
 };
 
@@ -89,7 +91,7 @@ pdu_node_t *
 pdu_node_mkpacket   (char *data, uint16_t size, void *context);
 
 char *
-pdu_node_cursor     (pdu_node_t *parent, int offset, int position);
+pdu_node_cursor     (pdu_node_t *node, uint16_t offset, uint16_t offtype);
 
 
 
@@ -103,7 +105,7 @@ pdu_node_t *
 pdu_node_mkdata     (char *name, pdu_node_t *parent, char *data, ... );
 
 pdu_node_t *
-pdu_node_mksize     (char *name, pdu_node_t *parent, size_t *size, ... );
+pdu_node_mksize     (char *name, pdu_node_t *parent, size_t size, ... );
 
 pdu_node_t *
 pdu_node_mkdatasize (char *name, pdu_node_t *parent, char *data, size_t size, ... );

@@ -98,9 +98,9 @@ s1ap_decode(char *data, uint16_t size, void *context)
     //pdu_node_mkdatasize("criticality",   S1AP_PDU, (char *)&head->critval, 0, 4);
     //pdu_node_mk("valueSize",     S1AP_PDU, (char *)&head->critval, 8, 16);
 
-    pdu_node_cursor(S1AP_PDU, sizeof(uint8_t), PDU_CURSOR_CUR);
-    pdu_node_mknext("procedureCode", S1AP_PDU);
-    pdu_node_mknext("criticality",   S1AP_PDU);
+    //pdu_node_cursor(S1AP_PDU, sizeof(uint8_t), PDU_CURSOR_CUR);
+    //pdu_node_mknext("procedureCode", S1AP_PDU);
+    //pdu_node_mknext("criticality",   S1AP_PDU);
 
 #if 0
     //uint16_t critically     = bswap_16(head->critval) >> 14;
