@@ -53,6 +53,34 @@ pdu_node_get_root   (void *context)
 }
 
 void
+pdu_node_get_value  (pdu_node_t *node, void *value)
+{
+    uint8_t  *u8  = value;
+    uint16_t *u16 = value;
+    uint32_t *u32 = value;
+
+    switch(PDU_FTGET_BYTES(node->val.type)) {
+    case 1: *u8  = *(uint8_t*)node->val.data;
+            break;
+    case 2: *u16 = bswap_16(*(uint16_t*)node->val.data);
+            break;
+    case 4: *u32 = bswap_32(*(uint32_t*)node->val.data);
+            break;
+    }
+
+    if (node->val.mask) {
+        switch(PDU_FTGET_BYTES(node->val.type)) {
+        case 1: *u8 = (*u8 & node->val.mask) >> node->val.mask_offset;
+                break;
+        case 2: *u16 = (*u16 & node->val.mask) >> node->val.mask_offset;
+                break;
+        case 4: *u32 = (*u32 & node->val.mask) >> node->val.mask_offset;
+                break;
+        }
+    }
+}
+
+void
 pdu_node_trace      (pdu_node_t *node)
 {
     static int padding;
@@ -66,7 +94,6 @@ pdu_node_trace      (pdu_node_t *node)
         (PDU_FTGET_FAMILY(node->val.type) == PDU_FFAMILY_HEX)) {
 
         uint64_t data = 0;
-        //uint64_t size = PDU_FTGET_BYTES(node->val.type);
 
         switch(PDU_FTGET_BYTES(node->val.type)) {
         case 1: data = *(uint8_t*)node->val.data;
@@ -77,14 +104,11 @@ pdu_node_trace      (pdu_node_t *node)
                 break;
         }
         if (node->val.mask) {
-//fprintf(stdout, "data1: %lx\n", data);
             data = (data & node->val.mask) >> node->val.mask_offset;
-//fprintf(stdout, "data2: %lx\n", data);
         }
 
         char *format = (PDU_FTGET_FAMILY(node->val.type) == PDU_FFAMILY_HEX) ? "%x" : "%u";
         fprintf(stdout, format, data);
-
     }
 
     fprintf(stdout, "\n");
@@ -119,6 +143,8 @@ pdu_node_mkpacket   (char *data, uint16_t size, void *context)
 char *
 pdu_node_cursor     (pdu_node_t *node, uint16_t offset, uint16_t offtype)
 {
+    char *cursor = &node->val.data[node->val.cursor];
+
     switch (offtype) {
     case PDU_CURSOFF_BEGIN:
         node->val.cursor  = offset;
@@ -139,7 +165,7 @@ pdu_node_cursor     (pdu_node_t *node, uint16_t offset, uint16_t offtype)
         return NULL;
     }
 
-    return &node->val.data[node->val.cursor];
+    return cursor;
 }
 
 
@@ -195,6 +221,15 @@ pdu_node_t *
 pdu_node_mknext     (char *name, pdu_node_t *parent, ... )
 {
     pdu_node_t *node = pdu_node_mk__(name, parent, NULL, 0, true);
+    return node;
+}
+
+pdu_node_t *
+pdu_node_mkclone    (char *name, pdu_node_t *parent, ... )
+{
+    pdu_node_t *node = pdu_node_mk__(name, parent, NULL, 0, false);
+    node->val = parent->val;
+    node->val.cursor = 0;
     return node;
 }
 

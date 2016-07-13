@@ -44,6 +44,7 @@
 #define PDU_FF_PROTO        0x03
 #define PDU_FF_PDU          0x04
 
+#define PDU_FF_INVISIBLE    0x10
 
 /*
  * PDU NODE CURSOR POSITION
@@ -83,11 +84,17 @@ struct pdu_node {
     } val;
 };
 
+//#define bswap_8(val)              val
+//#define PDU_NODE_GETVAL(NODE, SZ) bswap_##SZ(*(uint##SZ_t*)NODE->val.data)
+
 void
 pdu_fields_register (pdu_field_t *fields);
 
 pdu_node_t *
 pdu_node_get_root   (void *context);
+
+void
+pdu_node_get_value  (pdu_node_t *node, void *value);
 
 void
 pdu_node_trace      (pdu_node_t *node);
@@ -105,6 +112,9 @@ pdu_node_mk         (char *name, pdu_node_t *parent, ... );
 
 pdu_node_t *
 pdu_node_mknext     (char *name, pdu_node_t *parent, ... );
+
+pdu_node_t *
+pdu_node_mkclone    (char *name, pdu_node_t *parent, ... );
 
 pdu_node_t *
 pdu_node_mkdata     (char *name, pdu_node_t *parent, char *data, ... );
