@@ -38,7 +38,7 @@ pdu_fields_register (pdu_field_t *fields)
                 pdu_dict_attrs[inode].mask_offset++;
                 mask >>= 1;
             }
-            while ( !mask ) {
+            while ( mask ) {
                 pdu_dict_attrs[inode].mask_bitlen++;
                 mask >>= 1;
             }
@@ -62,53 +62,31 @@ pdu_node_trace      (pdu_node_t *node)
     }
     fprintf(stdout, "%s: ", node->name);
 
-    if (node->val.type == PDU_FT_HEX8) {
-        fprintf(stdout, "%x", *(uint8_t*)node->val.data);
-    } else if (node->val.type == PDU_FT_HEX16) {
-        fprintf(stdout, "%x", bswap_16(*(uint16_t*)node->val.data));
-    } else if (node->val.type == PDU_FT_HEX24) {
-        fprintf(stdout, "%x", bswap_32(*(uint32_t*)node->val.data)  >> 8 & 0xFFFFFF);
-    } else if (node->val.type == PDU_FT_HEX32) {
-        fprintf(stdout, "%x", bswap_32(*(uint32_t*)node->val.data));
+    if ((PDU_FTGET_FAMILY(node->val.type) == PDU_FFAMILY_UINT) ||
+        (PDU_FTGET_FAMILY(node->val.type) == PDU_FFAMILY_HEX)) {
 
-    } else if (node->val.type == PDU_FT_UINT8) {
-        fprintf(stdout, "%u", *(uint8_t*)node->val.data);
-    } else if (node->val.type == PDU_FT_UINT16) {
-        fprintf(stdout, "%u", bswap_16(*(uint16_t*)node->val.data));
-    } else if (node->val.type == PDU_FT_UINT24) {
-        fprintf(stdout, "%u", bswap_32(*(uint32_t*)node->val.data) & 0xFFFFFF);
-    } else if (node->val.type == PDU_FT_UINT32) {
-        fprintf(stdout, "%u", bswap_32(*(uint32_t*)node->val.data));
-    }
+        uint64_t data = 0;
+        //uint64_t size = PDU_FTGET_BYTES(node->val.type);
 
-#if 0
-    if (!node->val.bitfrom && !node->val.bitto) {
-
-    }
-#endif
-#if 0
-    if (node->val.bitfrom || node->val.bitto) {
-        if (node->val.type == PDU_FT_HEX8) {
-            fprintf(stdout, "%x  ", (BITSET_MID(*((uint8_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
-        } else if (node->val.type == PDU_FT_HEX16) {
-            fprintf(stdout, "%x  ", (BITSET_MID(*((uint16_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
-        } else if (node->val.type == PDU_FT_HEX32) {
-            fprintf(stdout, "%x",   (BITSET_MID(*((uint32_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
-        } else if (node->val.type == PDU_FT_HEX64) {
-            fprintf(stdout, "%lx",  (BITSET_MID(*((uint64_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
+        switch(PDU_FTGET_BYTES(node->val.type)) {
+        case 1: data = *(uint8_t*)node->val.data;
+                break;
+        case 2: data = bswap_16(*(uint16_t*)node->val.data);
+                break;
+        case 4: data = bswap_32(*(uint32_t*)node->val.data);
+                break;
+        }
+        if (node->val.mask) {
+//fprintf(stdout, "data1: %lx\n", data);
+            data = (data & node->val.mask) >> node->val.mask_offset;
+//fprintf(stdout, "data2: %lx\n", data);
         }
 
-        if (node->val.type == PDU_FT_UINT8) {
-            fprintf(stdout, "%u  ", (BITSET_MID(*((uint8_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
-        } else if (node->val.type == PDU_FT_UINT16) {
-            fprintf(stdout, "%u  ", (BITSET_MID(*((uint16_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
-        } else if (node->val.type == PDU_FT_UINT32) {
-            fprintf(stdout, "%u",   (BITSET_MID(*((uint32_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
-        } else if (node->val.type == PDU_FT_UINT64) {
-            fprintf(stdout, "%lu",  (BITSET_MID(*((uint64_t *)node->val.data), node->val.bitfrom, node->val.bitto)));
-        }
+        char *format = (PDU_FTGET_FAMILY(node->val.type) == PDU_FFAMILY_HEX) ? "%x" : "%u";
+        fprintf(stdout, format, data);
+
     }
-#endif
+
     fprintf(stdout, "\n");
 
     if (node->child_f) {
@@ -188,7 +166,7 @@ pdu_node_mk__    (char *name, pdu_node_t *parent, char *data, uint16_t size, boo
             pnode->val.flags       = dnode->flags;
             pnode->val.mask        = dnode->mask;
             pnode->val.mask_offset = pdu_dict_attrs[inode].mask_offset;
-            pnode->val.mask_bitlen = pdu_dict_attrs[inode].mask_offset;
+            pnode->val.mask_bitlen = pdu_dict_attrs[inode].mask_bitlen;
 
             pnode->val.data = data ? data : &parent->val.data[parent->val.cursor];
             pnode->val.size = size ? size : dnode->type & 0xF;

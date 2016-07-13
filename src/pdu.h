@@ -30,6 +30,11 @@
 #define PDU_FT_CHAR         0x30
 #define PDU_FT_BITSET       0x40
 
+#define PDU_FFAMILY_UINT    0x00
+#define PDU_FFAMILY_HEX     0x10
+#define PDU_FTGET_BYTES(X)  (X & 0x0F)
+#define PDU_FTGET_FAMILY(X) (X & 0xF0)
+
 /*
  * PDU FIELD FLAGS
  */
