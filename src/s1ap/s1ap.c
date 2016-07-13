@@ -39,38 +39,49 @@ s1ap_decode_container(char *name, pdu_node_t *node, char *data, uint16_t size)
     }
 }
 
+
 void
 s1ap_decode_fields(char *data, uint16_t size, pdu_node_t *parent, uint8_t pcode)
 {
-    for (; *data; data++);
-    osi_s1ap_valhead_t *valhead = (void *)data;
 
-    if (valhead->items > 0) {
-        pdu_node_t *ie_items = pdu_node_mkdatasize("protocolIEs",
-                parent, (char*)(valhead+1), size - sizeof(*valhead));
-        data += sizeof(*valhead);
-        for (uint8_t item = 0; item < valhead->items; item++) {
+    uint16_t ipadding;
+    for (ipadding = 0; data[ipadding]; ipadding++);
 
-            osi_s1ap_valitem_head_t *valitem = (void *)data;
-            //uint16_t critically   = bswap_16(valitem->critval) >> 14;
-            uint16_t valsize      = bswap_16(valitem->critval) & 0xFFF;
+    pdu_node_cursor(parent, ipadding + 2, PDU_CURSOFF_INC);
 
-            pdu_node_t *ie_item = pdu_node_mkdatasize("protocolIE-field",
-                    ie_items, (char*)(valhead+1), size - sizeof(*valhead));
-            pdu_node_mkdatasize("id", ie_item, (char*)&valitem->id, 0);
-            pdu_node_mkdatasize("critically", ie_item, (char *)&valitem->critval, 6, 8);
-            pdu_node_mkdatasize("valueSize",  ie_item, (char *)&valitem->critval, 8, 16);
+    uint8_t items  = *(uint8_t*)pdu_node_cursor(parent, 1, PDU_CURSOFF_INC);
 
-            data += sizeof(*valitem);
-            s1ap_pie_func decode_func = s1ap_pies[bswap_16(valitem->id)].func;
+    if (items > 0) {
+        pdu_node_t *ie_items = pdu_node_mksize("protocolIEs",
+                parent, size - parent->val.cursor);
 
-            ie_item = pdu_node_mkdatasize("value", ie_item, (char*)data, valsize);
+        /* TODO: simplify */
+        for (uint8_t item = 0; item < items; item++) {
 
+            pdu_node_t *ie_item = pdu_node_mk("ProtocolIE-Field", ie_items);
+
+            pdu_node_t *field;
+            uint16_t    id, valsize;
+
+            field = pdu_node_mknext("id", ie_item);
+            pdu_node_get_value(field, &id);
+
+            field = pdu_node_mk("criticality",  ie_item);
+            field = pdu_node_mknext(".valsize", ie_item);
+            pdu_node_get_value(field, &valsize);
+
+            ie_item->val.size = valsize + 2 + 2;
+            pdu_node_cursor(ie_items, valsize + 2 + 2, PDU_CURSOFF_INC);
+
+
+            ie_item = pdu_node_mkdatasize("value", ie_item, ie_item->val.data + 2 + 2, valsize);
+
+            s1ap_pie_func decode_func = s1ap_pies[id].func;
             if (decode_func) {
-                decode_func(ie_item, (char*)data, valsize);
+                decode_func(ie_item,
+                            pdu_node_cursor(ie_item, 0, PDU_CURSOFF_NONE),
+                            valsize);
             }
-
-            data += valsize;
         }
     }
 }
@@ -82,9 +93,10 @@ s1ap_decode(char *data, uint16_t size, void *context)
 
     pdu_node_t *root = pdu_node_mkpacket(data, size, NULL);
     pdu_node_t *S1AP_PDU = pdu_node_mkdatasize("S1AP-PDU", root, data, size);
-    osi_s1ap_head_t *head = (void *)data;
 
-    switch(head->pdu_code) {
+    uint8_t pdu_code = *(uint8_t *)pdu_node_cursor(S1AP_PDU, 0, PDU_CURSOFF_NONE);
+
+    switch(pdu_code >> 5) {
     case 0: S1AP_PDU = pdu_node_mkdatasize("initiatingMessage",   S1AP_PDU, data, size);
             break;
     case 1: S1AP_PDU = pdu_node_mkdatasize("successfulOutcome",   S1AP_PDU, data, size);
@@ -93,31 +105,24 @@ s1ap_decode(char *data, uint16_t size, void *context)
             break;
     }
 
-    //pdu_node_mk("pduType",       S1AP_PDU, (char *)head, 5, 8);
-    //pdu_node_mkdatasize("procedureCode", S1AP_PDU, (char *)&head->procedure_code, 0);
-    //pdu_node_mkdatasize("criticality",   S1AP_PDU, (char *)&head->critval, 0, 4);
-    //pdu_node_mk("valueSize",     S1AP_PDU, (char *)&head->critval, 8, 16);
+    pdu_node_cursor(S1AP_PDU, sizeof(uint8_t), PDU_CURSOFF_INC);
 
-    //pdu_node_cursor(S1AP_PDU, sizeof(uint8_t), PDU_CURSOR_CUR);
-    //pdu_node_mknext("procedureCode", S1AP_PDU);
-    //pdu_node_mknext("criticality",   S1AP_PDU);
+    pdu_node_t *field;
+    uint8_t     proccode;
+    uint16_t    valsize;
 
-#if 0
-    //uint16_t critically     = bswap_16(head->critval) >> 14;
-    uint16_t valsize        = bswap_16(head->critval) & 0xFFF;
+    field = pdu_node_mknext("procedureCode", S1AP_PDU);
+    pdu_node_get_value(field, &proccode);
 
-    pdu_node_t *S1AP_VALUE = pdu_node_mk("value", S1AP_PDU, (char*)(head + 1), valsize);
-    char       *valname = NULL;
+    field = pdu_node_mk("criticality",  S1AP_PDU);
+    field = pdu_node_mknext(".valsize", S1AP_PDU);
+    pdu_node_get_value(field, &valsize);
 
-    if (head->procedure_code < s1ap_proccodes_sz) {
-        valname = s1ap_proccodes[head->procedure_code].name;
-    } else {
-        return;
-    }
+    /* TODO: add proccode section as pdu node */
 
-    S1AP_VALUE = pdu_node_mk(valname, S1AP_VALUE, (char*)(head + 1), valsize);
+    S1AP_PDU = pdu_node_mksize("value", S1AP_PDU, size - S1AP_PDU->val.cursor);
 
-    s1ap_decode_fields((char*)(head + 1), valsize, S1AP_VALUE, head->procedure_code);
-#endif
+    s1ap_decode_fields(S1AP_PDU->val.data, valsize, S1AP_PDU, proccode);
+
     pdu_node_trace(root);
 }
