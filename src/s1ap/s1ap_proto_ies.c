@@ -54,8 +54,7 @@ pie_0_MME_UE_ID(pdu_node_t *node, char *data, uint16_t size)
     // _todo: fix (13)
     // pdu_node_mknext("MME-UE-S1AP-ID", node, (char*)data, 0);
 #endif
-
-    pdu_node_mk("MME-UE-S1AP-ID", node);
+    pdu_node_mknext("MME-UE-S1AP-ID", node);
 }
 
 void
@@ -101,7 +100,8 @@ void
 pie_8_ENB_UE_ID(pdu_node_t *node, char *data, uint16_t size)
 {
     // _TODO: fix (13)
-    pdu_node_mk("ENB-UE-S1AP-ID", node);
+    //pdu_node_mk("ENB-UE-S1AP-ID", node);
+    pdu_node_mknext("ENB-UE-S1AP-ID", node);
 }
 
 /* pid  9: unknown
