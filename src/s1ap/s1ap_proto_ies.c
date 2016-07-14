@@ -50,30 +50,35 @@ struct s1ap_100_EUTRAN_CGI {
 void
 pie_0_MME_UE_ID(pdu_node_t *node, char *data, uint16_t size)
 {
-#if 0
-    // _todo: fix (13)
-    // pdu_node_mknext("MME-UE-S1AP-ID", node, (char*)data, 0);
-#endif
-    pdu_node_mknext("MME-UE-S1AP-ID", node);
+    if (size > sizeof(uint32_t)) {
+        pdu_node_cursor(node, size - sizeof(uint32_t), PDU_CURSOFF_INC);
+    }
+    pdu_node_mk("MME-UE-S1AP-ID", node);
 }
 
 void
 pie_1_HandoverType(pdu_node_t *node, char *data, uint16_t size)
 {
+    if (size > sizeof(uint8_t)) {
+        pdu_node_cursor(node, size - sizeof(uint8_t), PDU_CURSOFF_INC);
+    }
     pdu_node_mk("HandoverType", node);
 }
 
 void
 pie_2_Cause(pdu_node_t *node, char *data, uint16_t size)
 {
-    //002 Cause                          3 pack;
-    //002 CauseRadioNetwork              3 pack;
-    //002 nas                          629 pack;
-    //002 protocol (Cause)            1932 pack;
-    //002 transport (Cause)           4052 pack;
+    pdu_node_t *ncause = pdu_node_mk("Cause", node);
+    uint8_t     vcause;
+    pdu_node_get_value(ncause, &vcause);
 
-    pdu_node_mk("Cause", node);
-    pdu_node_mk("CauseRadioNetwork", node);
+    switch (vcause) {
+    case 0: pdu_node_mk("radioNetwork", ncause); break;
+    case 1: pdu_node_mk("transport",    ncause); break;
+    case 2: pdu_node_mk("nas",          ncause); break;
+    case 3: pdu_node_mk("protocol",     ncause); break;
+    case 4: pdu_node_mk("misc",         ncause); break;
+    }
 }
 
 void
@@ -99,8 +104,9 @@ pie_4_TargetID(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_8_ENB_UE_ID(pdu_node_t *node, char *data, uint16_t size)
 {
-    // _TODO: fix (13)
-    //pdu_node_mk("ENB-UE-S1AP-ID", node);
+    if (size > sizeof(uint16_t)) {
+        pdu_node_cursor(node, size - sizeof(uint16_t), PDU_CURSOFF_INC);
+    }
     pdu_node_mknext("ENB-UE-S1AP-ID", node);
 }
 
@@ -459,9 +465,12 @@ pie_66_UEAggregateMaximumBitrate(pdu_node_t *node, char *data, uint16_t size)
     pdu_node_mk("uEaggregateMaximumBitRateDL", node, (char *)&bt->uEaggregateMaximumBitRateDL, 0);
     pdu_node_mk("uEaggregateMaximumBitRateDL", node, (char *)&bt->uEaggregateMaximumBitRateUL, 0);
 #endif
-    // 066 bitrate                               2 pack;
-    pdu_node_mk("uEaggregateMaximumBitRateDL", node);
-    pdu_node_mk("uEaggregateMaximumBitRateUL", node);
+
+    pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
+    pdu_node_mknext("uEaggregateMaximumBitRateDL", node);
+
+    pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
+    pdu_node_mknext("uEaggregateMaximumBitRateUL", node);
 }
 
 void
@@ -639,29 +648,17 @@ pie_98_RequestType(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_99_UE_S1AP_IDs(pdu_node_t *node, char *data, uint16_t size)
 {
-#if 0
-    node = pdu_node_mk("UE_S1AP_IDs", node, data, size);
-    node = pdu_node_mk("uE-S1AP-ID-pair", node, data, size);
+    pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
+    pdu_node_mknext("MME-UE-S1AP-ID", node);
 
-    struct s1ap_99_UE_S1AP_IDs *ids = (void *)data;
-    pdu_node_mk("MME-UE-S1AP-ID", node, (char *)&ids->mMe, 0);
-    pdu_node_mk("ENB-UE-S1AP-ID", node, (char *)&ids->eNB, 0);
-#endif
-    pdu_node_mk("ENB-UE-S1AP-ID", node);
-    pdu_node_mk("MME-UE-S1AP-ID", node);
+    pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
+    pdu_node_mknext("ENB-UE-S1AP-ID", node);
 }
 
 void
 pie_100_EUTRAN_CGI(pdu_node_t *node, char *data, uint16_t size)
 {
-#if 0
-    node = pdu_node_mk("EUTRAN-CGI", node, data, size);
 
-    struct s1ap_100_EUTRAN_CGI *eutran = (void *)data;
-    pdu_node_mk("pLMNIdentity", node, (char *)&eutran->PLMNId, 0);
-    pdu_node_mk("cell-ID", node, (char *)&eutran->cellID, 0);
-#endif
-    pdu_node_mk("cell-ID", node);
 }
 
 void

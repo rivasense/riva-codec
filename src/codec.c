@@ -134,7 +134,7 @@ int main()
             break;
         }
 
-        if (p_cnt == 1) {
+        if (p_cnt == 2) {
             packet_analyze(p_body, rechdr.ilen);
             break;
         }
