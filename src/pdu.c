@@ -177,7 +177,7 @@ pdu_node_mk__    (char *name, pdu_node_t *parent, char *data, uint16_t size, boo
 {
     pdu_field_t *dnode = pdu_dict;
     for (int inode = 0; dnode->name; dnode++, inode++) {
-        if (strcmp(name, dnode->name) == 0) {
+        if (strcasecmp(name, dnode->name) == 0) {
 
             pdu_node_t *pnode = &pdu_tree.nodes[pdu_tree.cursor++];
             if (!parent->child_f || !parent->child_l) {

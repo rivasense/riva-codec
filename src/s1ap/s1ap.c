@@ -7,41 +7,17 @@
 #include "s1ap_dict.h"
 #include "s1ap_proto_ies.h"
 
-
 void
-s1ap_decode_container(char *name, pdu_node_t *node, char *data, uint16_t size)
+s1ap_decode_ie(pdu_node_t *parent, uint16_t ie, char *data, uint16_t size)
 {
-    uint8_t *items = (void *)data;
-    node = pdu_node_mkdatasize("TAIList", node, data, size);
-    data++; size--;
-
-    for (uint8_t item = 0; item <= *items; item++) {
-
-        osi_s1ap_valitem_head_t *valitem = (void *)data;
-        uint16_t valsize                 = bswap_16(valitem->critval) & 0xFFF;
-
-        pdu_node_t *ie_item = pdu_node_mkdatasize(name,
-                node, data, size - sizeof(*valitem) - valsize);
-        pdu_node_mkdatasize("id", ie_item, (char*)&valitem->id, 0);
-        pdu_node_mkdatasize("critically", ie_item, (char *)&valitem->critval, 6, 8);
-        pdu_node_mkdatasize("valueSize",  ie_item, (char *)&valitem->critval, 8, 16);
-
-        data += sizeof(*valitem);
-        s1ap_pie_func decode_func = s1ap_pies[bswap_16(valitem->id)].func;
-
-        ie_item = pdu_node_mkdatasize("value", ie_item, (char*)data, valsize);
-
-        if (decode_func) {
-            decode_func(ie_item, (char*)data, valsize);
-        }
-
-        data += valsize;
+    s1ap_pie_func decode_func = s1ap_pies[ie].func;
+    if (decode_func) {
+        decode_func(parent, data, size);
     }
 }
 
-
 void
-s1ap_decode_fields(char *data, uint16_t size, pdu_node_t *parent, uint8_t pcode)
+s1ap_decode_container(pdu_node_t *parent, uint8_t pcode, char *data, uint16_t size)
 {
 
     uint16_t ipadding;
@@ -76,12 +52,7 @@ s1ap_decode_fields(char *data, uint16_t size, pdu_node_t *parent, uint8_t pcode)
 
             ie_item = pdu_node_mkdatasize("value", ie_item, ie_item->val.data + 2 + 2, valsize);
 
-            s1ap_pie_func decode_func = s1ap_pies[id].func;
-            if (decode_func) {
-                decode_func(ie_item,
-                            pdu_node_cursor(ie_item, 0, PDU_CURSOFF_NONE),
-                            valsize);
-            }
+            s1ap_decode_ie(ie_item, id, pdu_node_cursor(ie_item, 0, PDU_CURSOFF_NONE), valsize);
         }
     }
 }
@@ -122,7 +93,7 @@ s1ap_decode(char *data, uint16_t size, void *context)
 
     S1AP_PDU = pdu_node_mksize("value", S1AP_PDU, size - S1AP_PDU->val.cursor);
 
-    s1ap_decode_fields(S1AP_PDU->val.data, valsize, S1AP_PDU, proccode);
+    s1ap_decode_container(S1AP_PDU, proccode, S1AP_PDU->val.data, valsize);
 
     pdu_node_trace(root);
 }
