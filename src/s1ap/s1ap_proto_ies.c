@@ -4,6 +4,15 @@
 #include "s1ap_dict.h"
 #include "s1ap_proto_ies.h"
 
+
+static void
+__pLMNidentity(pdu_node_t *node)
+{
+    node = pdu_node_mknext("PLMNidentity", node);
+    pdu_node_mknext("MCC", node);
+    pdu_node_mknext("MNC", node);
+}
+
 void
 pie_0_MME_UE_ID(pdu_node_t *node, char *data, uint16_t size)
 {
@@ -46,11 +55,39 @@ pie_3_SourceID(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_4_TargetID(pdu_node_t *node, char *data, uint16_t size)
 {
-    // 004 lAC                                2224 pack;
-    // 004 macroENB_ID / homeENB_ID           2797 pack;
-    // 004 rAC                                2224 pack;
-    // 004 rNC_ID                             2224 pack;
-    // 004 TAC / tAC                          2797 pack;
+    uint8_t targetid;
+
+    node = pdu_node_mknext("TargetID", node);
+    pdu_node_get_value(node, &targetid);
+
+    if (targetid == 0) {
+        pdu_node_t *tenb = pdu_node_mkdatasize("targeteNB-ID", node, data + 1, size - 1);
+
+        /* global ENB ID */
+        __pLMNidentity(tenb);
+
+        uint8_t     genb_id_v;
+        pdu_node_t *genb_id = pdu_node_mknext("eNB-ID", tenb);
+        pdu_node_get_value(genb_id, &genb_id_v);
+        if (genb_id_v == 0) {
+            pdu_node_mknext("macroENB-ID", tenb);
+        } else {
+            pdu_node_mknext("homeENB-ID", tenb);
+        }
+
+
+        /* selected TAI */
+        __pLMNidentity(tenb);
+        pdu_node_mknext("tAC", tenb);
+    }
+
+    if (targetid == 1) {
+        pdu_node_t *trnc = pdu_node_mkdatasize("targetRNC-ID", node, data + 2, size - 2);
+        __pLMNidentity(trnc);
+        pdu_node_mknext("lAC", trnc);
+        pdu_node_mknext("rAC", trnc);
+        pdu_node_mknext("rNC-ID", trnc);
+    }
 }
 
 /* pid 5: unknown
@@ -75,6 +112,10 @@ pie_8_ENB_UE_ID(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_12_ERABSubjecttoDataForwardingList(pdu_node_t *node, char *data, uint16_t size)
 {
+    s1ap_decode_list(node,
+                    "E-RABSubjecttoDataForwardingList",
+                    "E-RABDataForwardingItem",
+                    data, size);
 }
 
 void
@@ -85,32 +126,44 @@ pie_13_ERABtoReleaseListHOCmd(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_14_ERABDataForwardingItem(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("e-RAB-ID", node);
-    pdu_node_mk("gTP-TEID", node);
+    pdu_node_mknext("e-RAB-ID", node);
+    pdu_node_mknext("transportLayerAddress", node);
+    pdu_node_mknext("gTP-TEID", node);
 }
 
 void
 pie_15_ERABReleaseItemBearerRelComp(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("e-RAB-ID", node);
+    pdu_node_mknext("e-RAB-ID", node);
 }
 
 void
 pie_16_ERABToBeSetupListBearerSUReq(pdu_node_t *node, char *data, uint16_t size)
 {
+    s1ap_decode_list(node,
+                    "E-RABToBeSetupListBearerSUReq",
+                    "E-RABToBeSetupItemBearerSUReq",
+                    data, size);
+
 }
 
 void
 pie_17_ERABToBeSetupItemBearerSUReq(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("e-RAB-ID", node);
-    pdu_node_mk("gTP-TEID", node);
-    pdu_node_mk("qCI", node);
+    pdu_node_mknext("e-RAB-ID", node);
+    pdu_node_mknext("qCI", node);
+
+    // padding ?? bytes
+    pdu_node_mknext("gTP-TEID", node);
 }
 
 void
 pie_18_ERABAdmittedList(pdu_node_t *node, char *data, uint16_t size)
 {
+    s1ap_decode_list(node,
+                    "E-RABAdmittedList",
+                    "E-RABAdmittedItem",
+                    data, size);
 }
 
 void
@@ -121,8 +174,9 @@ pie_19_ERABFailedToSetupListHOReqAck(pdu_node_t *node, char *data, uint16_t size
 void
 pie_20_RABAdmittedItem(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("e-RAB-ID", node);
-    pdu_node_mk("gTP-TEID", node);
+    pdu_node_mknext("e-RAB-ID", node);
+    pdu_node_mknext("transportLayerAddress", node);
+    pdu_node_mknext("gTP-TEID", node);
 }
 
 void
@@ -133,20 +187,27 @@ pie_21_ERABFailedtoSetupItemHOReqAck(pdu_node_t *node, char *data, uint16_t size
 void
 pie_22_ERABToBeSwitchedDLList(pdu_node_t *node, char *data, uint16_t size)
 {
-    // container 22 -> 23
+    s1ap_decode_list(node,
+                    "E-RABToBeSwitchedDLList",
+                    "E-RABToBeSwitchedDLItem",
+                    data, size);
 }
 
 void
 pie_23_ERABToBeSwitchedDLItem(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("e-RAB-ID", node);
-    pdu_node_mk("gTP-TEID", node);
+    pdu_node_mknext("e-RAB-ID", node);
+    pdu_node_mknext("transportLayerAddress", node);
+    pdu_node_mknext("gTP-TEID", node);
 }
 
 void
 pie_24_ERABToBeSetupListCtxtSUReq(pdu_node_t *node, char *data, uint16_t size)
 {
-    // container 24 -> 52
+    s1ap_decode_list(node,
+                    "E-RABToBeSetupListCtxtSUReq",
+                    "E-RABToBeSetupItemCtxtSUReq",
+                    data, size);
 }
 
 void
@@ -162,15 +223,19 @@ pie_26_NAS_PDU(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_27_ERABToBeSetupItemHOReq(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("e-RAB-ID", node);
-    pdu_node_mk("gTP-TEID", node);
-    pdu_node_mk("qCI", node);
+    pdu_node_mknext("e-RAB-ID", node);
+    pdu_node_mknext("transportLayerAddress", node);
+    pdu_node_mknext("gTP-TEID", node);
+    pdu_node_mknext("qCI", node);
 }
 
 void
 pie_28_ERABSetupListBearerSURes(pdu_node_t *node, char *data, uint16_t size)
 {
-    // container 28 -> 27
+    s1ap_decode_list(node,
+                    "E-RABSetupListBearerSURes",
+                    "E-RABSetupItemBearerSURes",
+                    data, size);
 }
 
 void
@@ -182,6 +247,10 @@ pie_29_ERABFailedToSetupListBearerSURes(pdu_node_t *node, char *data, uint16_t s
 void
 pie_30_ERABToBeModifiedListBearerModReq(pdu_node_t *node, char *data, uint16_t size)
 {
+    s1ap_decode_list(node,
+                    "E-RABToBeModifiedListBearerModReq",
+                    "E-RABToBeModifiedItemBearerModReq",
+                    data, size);
 }
 
 void
@@ -197,7 +266,10 @@ pie_32_ERABFailedToModifyList(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_33_ERABToBeReleasedList(pdu_node_t *node, char *data, uint16_t size)
 {
-    // container 33 -> 35
+    s1ap_decode_list(node,
+                    "E-RABToBeReleasedList",
+                    "E-RABItem",
+                    data, size);
 }
 
 void
@@ -209,22 +281,32 @@ pie_34_ERABFailedToReleaseList(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_35_ERABItem(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("Cause", node);
-    pdu_node_mk("e-RAB-ID", node);
-    pdu_node_mk("nas", node);
+    pdu_node_mknext("e-RAB-ID", node);
+
+    pdu_node_t *ncause = pdu_node_mk("Cause", node);
+    uint8_t     vcause;
+    pdu_node_get_value(ncause, &vcause);
+
+    switch (vcause) {
+    case 0: pdu_node_mk("radioNetwork", ncause); break;
+    case 1: pdu_node_mk("transport",    ncause); break;
+    case 2: pdu_node_mk("nas",          ncause); break;
+    case 3: pdu_node_mk("protocol",     ncause); break;
+    case 4: pdu_node_mk("misc",         ncause); break;
+    }
 }
 
 void
 pie_36_ERABToBeModifiedItemBearerModReq(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("e-RAB-ID", node);
-    pdu_node_mk("qCI", node);
+    pdu_node_mknext("e-RAB-ID", node);
+    pdu_node_mknext("qCI", node);
 }
 
 void
 pie_37_ERABModifyItemBearerModRes(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("e-RAB-ID", node);
+    pdu_node_mknext("e-RAB-ID", node);
 }
 
 void
@@ -235,8 +317,9 @@ pie_38_ERABReleaseItem(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_39_ERABSetupItemBearerSURes(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("e-RAB-ID", node);
-    pdu_node_mk("gTP-TEID", node);
+    pdu_node_mknext("e-RAB-ID", node);
+    pdu_node_mknext("transportLayerAddress", node);
+    pdu_node_mknext("gTP-TEID", node);
 }
 
 void
@@ -256,8 +339,8 @@ pie_41_HandoverRestrictionList(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_43_UEPagingID(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("mME-Code", node);
-    pdu_node_mk("m-TMSI", node);
+    pdu_node_mknext("mMEC", node);
+    pdu_node_mknext("m-TMSI",  node);
 }
 
 void
@@ -272,48 +355,18 @@ pie_44_pagingDRX(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_46_TAIList(pdu_node_t *node, char *data, uint16_t size)
 {
-#if 0
-    uint8_t *items = (void *)data;
-    node = pdu_node_mk("TAIList", node, data, size);
-    data++; size--;
-
-    for (uint8_t item = 0; item <= *items; item++) {
-
-        osi_s1ap_valitem_head_t *valitem = (void *)data;
-        uint16_t valsize                 = bswap_16(valitem->critval) & 0xFFF;
-
-        pdu_node_t *ie_item = pdu_node_mk("protocolIE-SingleContainer",
-                node, data, size - sizeof(*valitem) - valsize);
-        pdu_node_mk("id", ie_item, (char*)&valitem->id, 0);
-        pdu_node_mkbitset("critically", ie_item, (char *)&valitem->critval, 6, 8);
-        pdu_node_mkbitset("valueSize",  ie_item, (char *)&valitem->critval, 8, 16);
-
-        data += sizeof(*valitem);
-        s1ap_pie_func decode_func = s1ap_pies[bswap_16(valitem->id)].func;
-
-        ie_item = pdu_node_mk("value", ie_item, (char*)data, valsize);
-
-        if (decode_func) {
-            decode_func(ie_item, (char*)data, valsize);
-        }
-
-        data += valsize;
-    }
-#endif
+    s1ap_decode_list(node,
+                    "TAIList",
+                    "TAIItem",
+                    data, size);
 }
 
 void
 pie_47_TAIItem(pdu_node_t *node, char *data, uint16_t size)
 {
-#if 0
-    node = pdu_node_mk("TAIItem", node, data, size);
-
-    struct s1ap_47_TAIItem *titem = (void *)data;
-    pdu_node_mk("pLMNIdentity", node, (char *)&titem->PLMNId, 0);
-    pdu_node_mk("tAC",          node, (char *)&titem->tAC, 0);
-    // TODO: MCC, MNC here
-#endif
-    pdu_node_mk("tAC", node);
+    pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
+    __pLMNidentity(node);
+    pdu_node_mknext("tAC", node);
 }
 
 void
@@ -329,27 +382,37 @@ pie_49_ERABReleaseItemHOCmd(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_50_ERABSetupItemCtxtSURes(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("e-RAB-ID", node);
-    pdu_node_mk("gTP-TEID", node);
+    pdu_node_mknext("e-RAB-ID", node);
+    pdu_node_mknext("transportLayerAddress", node);
+    pdu_node_mknext("gTP-TEID", node);
 }
 
 void
 pie_51_ERABSetupListCtxtSURes(pdu_node_t *node, char *data, uint16_t size)
 {
-    // constainer 51 -> 50
+    s1ap_decode_list(node,
+                    "E-RABSetupListCtxtSURes",
+                    "E-RABSetupItemCtxtSURes",
+                    data, size);
 }
 
 void
 pie_52_ERABToBeSetupItemCtxtSUReq(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("e-RAB-ID", node);
-    pdu_node_mk("gTP-TEID", node);
-    pdu_node_mk("qCI", node);
+    pdu_node_mknext("e-RAB-ID", node);
+    pdu_node_mknext("qCI", node);
+
+    // padding ?? bytes
+    pdu_node_mknext("gTP-TEID", node);
 }
 
 void
 pie_53_ERABToBeSetupListHOReq(pdu_node_t *node, char *data, uint16_t size)
 {
+    s1ap_decode_list(node,
+                    "E-RABToBeSetupListHOReq",
+                    "E-RABToBeSetupItemHOReq",
+                    data, size);
 }
 
 /*
@@ -378,8 +441,17 @@ pie_58_CriticalityDiagnostics(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_59_Global_ENB_ID(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("macroENB-ID", node);
-    pdu_node_mk("homeENB-ID", node);
+    pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
+    __pLMNidentity(node);
+
+    uint8_t     genb_id_v;
+    pdu_node_t *genb_id = pdu_node_mknext("eNB-ID", node);
+    pdu_node_get_value(genb_id, &genb_id_v);
+    if (genb_id_v == 0) {
+        pdu_node_mknext("macroENB-ID", node);
+    } else {
+        pdu_node_mknext("homeENB-ID", node);
+    }
 }
 
 void
@@ -415,14 +487,6 @@ pie_65_TimeToWait(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_66_UEAggregateMaximumBitrate(pdu_node_t *node, char *data, uint16_t size)
 {
-#if 0
-    node = pdu_node_mk("UEAggregateMaximumBitrate", node, data, size);
-
-    struct s1ap_66_UEAggregateMaximumBitrate *bt = (void *)data;
-    pdu_node_mk("uEaggregateMaximumBitRateDL", node, (char *)&bt->uEaggregateMaximumBitRateDL, 0);
-    pdu_node_mk("uEaggregateMaximumBitRateDL", node, (char *)&bt->uEaggregateMaximumBitRateUL, 0);
-#endif
-
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
     pdu_node_mknext("uEaggregateMaximumBitRateDL", node);
 
@@ -433,14 +497,8 @@ pie_66_UEAggregateMaximumBitrate(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_67_TAI(pdu_node_t *node, char *data, uint16_t size)
 {
-#if 0
-    node = pdu_node_mk("TAI", node, data, size);
-
-    struct s1ap_67_TAI *tai = (void *)data;
-    pdu_node_mk("pLMNIdentity", node, (char *)&tai->PLMNId, 0);
-    pdu_node_mk("tAC",          node, (char *)&tai->tAC, 0);
-    // _TODO: MCC, MNC here
-#endif
+    pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
+    __pLMNidentity(node);
     pdu_node_mk("tAC", node);
 }
 
@@ -451,6 +509,10 @@ pie_67_TAI(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_69_ERABReleaseListBearerRelComp(pdu_node_t *node, char *data, uint16_t size)
 {
+    s1ap_decode_list(node,
+                    "E-RABReleaseListBearerRelComp",
+                    "E-RABReleaseItemBearerRelComp",
+                    data, size);
 }
 
 void
@@ -491,8 +553,6 @@ pie_75_GUMMEI_ID(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_78_ERABInformationListItem(pdu_node_t *node, char *data, uint16_t size)
 {
-    // 078 cell_ID                            2797 pack;
-    // 078 e_RAB_ID                           2797 pack;
     pdu_node_mk("cell-ID",  node);
     pdu_node_mk("e-RAB-ID", node);
 }
@@ -505,9 +565,6 @@ pie_79_DirectForwardingPathAvailability(pdu_node_t *node, char *data, uint16_t s
 void
 pie_80_UEIdentityIndexValue(pdu_node_t *node, char *data, uint16_t size)
 {
-#if 0
-    pdu_node_mk("UEIdentityIndexValue", node, (char*)data, 0);
-#endif
 }
 
 /*
@@ -547,14 +604,16 @@ pie_88_SourceMME_UE_S1AP_ID(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_89_BearersSubjectToStatusTransferItem(pdu_node_t *node, char *data, uint16_t size)
 {
-    // 089 e_RAB_ID                           2821 pack;
     pdu_node_mk("e-RAB-ID", node);
 }
 
 void
 pie_90_eNB_StatusTransferTransparentContainer(pdu_node_t *node, char *data, uint16_t size)
 {
-    // container 90 -> 89
+    s1ap_decode_list(node,
+                    "eNB-StatusTransfer-TransparentContainer",
+                    "Bearers-SubjectToStatusTransfer-Item",
+                    data, size);
 }
 
 void
@@ -582,13 +641,16 @@ pie_94_ERABToBeSwitchedULItem(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_95_ERABToBeSwitchedULList(pdu_node_t *node, char *data, uint16_t size)
 {
-    //  container 95 -> 94
+    s1ap_decode_list(node,
+                    "E-RABToBeSwitchedULList",
+                    "E-RABToBeSwitchedULItem",
+                    data, size);
 }
 
 void
 pie_96_STMSI(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("mME-Code", node);
+    pdu_node_mk("mMEC", node);
     pdu_node_mk("m-TMSI",  node);
 }
 
@@ -615,6 +677,9 @@ pie_99_UE_S1AP_IDs(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_100_EUTRAN_CGI(pdu_node_t *node, char *data, uint16_t size)
 {
+    pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
+    __pLMNidentity(node);
+    pdu_node_mknext("cell-ID", node);
 
 }
 
@@ -642,8 +707,11 @@ pie_104_SourceToTargetTransparentContainer(pdu_node_t *node, char *data, uint16_
 void
 pie_105_ServedGUMMEIs(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("mME-Code", node);
+    pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
+    __pLMNidentity(node);
+
     pdu_node_mk("mME-Group-ID", node);
+    pdu_node_mk("mME-Code", node);
 }
 
 void

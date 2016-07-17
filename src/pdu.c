@@ -64,6 +64,8 @@ pdu_node_get_value  (pdu_node_t *node, void *value)
             break;
     case 2: *u16 = bswap_16(*(uint16_t*)node->val.data);
             break;
+    case 3: *u32 = bswap_32(*(uint32_t*)node->val.data) >> 8;
+            break;
     case 4: *u32 = bswap_32(*(uint32_t*)node->val.data);
             break;
     }
@@ -99,6 +101,8 @@ pdu_node_trace      (pdu_node_t *node)
         case 1: data = *(uint8_t*)node->val.data;
                 break;
         case 2: data = bswap_16(*(uint16_t*)node->val.data);
+                break;
+        case 3: data = bswap_32(*(uint32_t*)node->val.data) >> 8;
                 break;
         case 4: data = bswap_32(*(uint32_t*)node->val.data);
                 break;
