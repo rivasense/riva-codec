@@ -19,39 +19,30 @@ s1ap_decode_ie(pdu_node_t *parent, uint16_t ie, char *data, uint16_t size)
 void
 s1ap_decode_list(pdu_node_t *parent, char *lname, char *iname, char *data, uint16_t size)
 {
-    uint16_t ipadding;
-    for (ipadding = 0; data[ipadding]; ipadding++);
+    pdu_node_t *ie_items = pdu_node_mksize(lname, parent, size);
+    pdu_node_cursor(ie_items, 1, PDU_CURSOFF_INC);
 
-    pdu_node_cursor(parent, ipadding + 2, PDU_CURSOFF_INC);
+    for (;;) {
+        pdu_node_t *ie_item = pdu_node_mk(iname, ie_items);
 
-    uint8_t items  = *(uint8_t*)pdu_node_cursor(parent, 1, PDU_CURSOFF_INC);
+        pdu_node_t *field;
+        uint16_t    id, valsize;
 
-    if (items > 0) {
-        pdu_node_t *ie_items = pdu_node_mksize(lname,
-                parent, size - parent->val.cursor);
+        field = pdu_node_mknext("id", ie_item);
+        pdu_node_get_value(field, &id);
 
-        /* TODO: simplify */
-        for (uint8_t item = 0; item <= items; item++) {
+        field = pdu_node_mk("criticality", ie_item);
+        field = pdu_node_mknext("valsize", ie_item);
+        pdu_node_get_value(field, &valsize);
 
-            pdu_node_t *ie_item = pdu_node_mk(iname, ie_items);
+        pdu_node_cursor(ie_items, valsize + 2 + 2, PDU_CURSOFF_INC);
+        ie_item->val.size = valsize + 2 + 2;
+        ie_item = pdu_node_mkdatasize("value", ie_item, ie_item->val.data + 2 + 2, valsize);
 
-            pdu_node_t *field;
-            uint16_t    id, valsize;
+        s1ap_decode_ie(ie_item, id, pdu_node_cursor(ie_item, 0, PDU_CURSOFF_NONE), valsize);
 
-            field = pdu_node_mknext("id", ie_item);
-            pdu_node_get_value(field, &id);
-
-            field = pdu_node_mk("criticality",  ie_item);
-            field = pdu_node_mknext(".valsize", ie_item);
-            pdu_node_get_value(field, &valsize);
-
-            ie_item->val.size = valsize + 2 + 2;
-            pdu_node_cursor(ie_items, valsize + 2 + 2, PDU_CURSOFF_INC);
-
-
-            ie_item = pdu_node_mkdatasize("value", ie_item, ie_item->val.data + 2 + 2, valsize);
-
-            s1ap_decode_ie(ie_item, id, pdu_node_cursor(ie_item, 0, PDU_CURSOFF_NONE), valsize);
+        if (ie_items->val.cursor + 2 + 2 >= size) {
+            break;
         }
     }
 }
@@ -82,8 +73,8 @@ s1ap_decode_container(pdu_node_t *parent, uint8_t pcode, char *data, uint16_t si
             field = pdu_node_mknext("id", ie_item);
             pdu_node_get_value(field, &id);
 
-            field = pdu_node_mk("criticality",  ie_item);
-            field = pdu_node_mknext(".valsize", ie_item);
+            field = pdu_node_mk("criticality", ie_item);
+            field = pdu_node_mknext("valsize", ie_item);
             pdu_node_get_value(field, &valsize);
 
             ie_item->val.size = valsize + 2 + 2;
@@ -125,8 +116,8 @@ s1ap_decode(char *data, uint16_t size, void *context)
     field = pdu_node_mknext("procedureCode", S1AP_PDU);
     pdu_node_get_value(field, &proccode);
 
-    field = pdu_node_mk("criticality",  S1AP_PDU);
-    field = pdu_node_mknext(".valsize", S1AP_PDU);
+    field = pdu_node_mk("criticality", S1AP_PDU);
+    field = pdu_node_mknext("valsize", S1AP_PDU);
     pdu_node_get_value(field, &valsize);
 
     /* TODO: add proccode section as pdu node */

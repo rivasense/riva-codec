@@ -134,7 +134,7 @@ int main()
             break;
         }
 
-        if (p_cnt == 28813) {
+        if (p_cnt == 2584) {
             packet_analyze(p_body, rechdr.ilen);
             break;
         }
