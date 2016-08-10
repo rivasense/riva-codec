@@ -7,22 +7,31 @@
 #include "s1ap_dict.h"
 #include "s1ap_proto_ies.h"
 
-void
+static int
 s1ap_decode_ie(pdu_node_t *parent, uint16_t ie, char *data, uint16_t size)
 {
     s1ap_pie_func decode_func = s1ap_pies[ie].func;
     if (decode_func) {
         decode_func(parent, data, size);
+        return 0;
     }
+    return -1;
 }
 
 void
 s1ap_decode_list(pdu_node_t *parent, char *lname, char *iname, char *data, uint16_t size)
 {
     pdu_node_t *ie_items = pdu_node_mksize(lname, parent, size);
-    pdu_node_cursor(ie_items, 1, PDU_CURSOFF_INC);
 
     for (;;) {
+        while (!ie_items->val.data[ie_items->val.cursor + 1] &&
+                ie_items->val.cursor + 2 + 2 < size) {
+            ie_items->val.cursor++;
+        }
+        if (ie_items->val.cursor + 2 + 2 >= size) {
+            break;
+        }
+
         pdu_node_t *ie_item = pdu_node_mk(iname, ie_items);
 
         pdu_node_t *field;
@@ -39,9 +48,8 @@ s1ap_decode_list(pdu_node_t *parent, char *lname, char *iname, char *data, uint1
         ie_item->val.size = valsize + 2 + 2;
         ie_item = pdu_node_mkdatasize("value", ie_item, ie_item->val.data + 2 + 2, valsize);
 
-        s1ap_decode_ie(ie_item, id, pdu_node_cursor(ie_item, 0, PDU_CURSOFF_NONE), valsize);
-
-        if (ie_items->val.cursor + 2 + 2 >= size) {
+        int rcode = s1ap_decode_ie(ie_item, id, pdu_node_cursor(ie_item, 0, PDU_CURSOFF_NONE), valsize);
+        if (rcode < 0) {
             break;
         }
     }

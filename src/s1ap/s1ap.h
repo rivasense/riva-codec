@@ -32,7 +32,7 @@ void s1ap_decode_list(pdu_node_t *parent, char *lname, char *iname, char *data, 
 
 void s1ap_decode_container(pdu_node_t *parent, uint8_t pcode, char *data, uint16_t size);
 
-void s1ap_decode_ie(pdu_node_t *parent, uint16_t ie, char *data, uint16_t size);
+//void s1ap_decode_ie(pdu_node_t *parent, uint16_t ie, char *data, uint16_t size);
 
 void s1ap_decode(char *data, uint16_t size, void *context);
 
