@@ -97,7 +97,7 @@ pdu_node_trace      (pdu_node_t *node)
 
         uint64_t data = 0;
 
-        switch(PDU_FTGET_BYTES(node->val.type)) {
+        switch(/*PDU_FTGET_BYTES(node->val.type)*/node->val.size) {
         case 1: data = *(uint8_t*)node->val.data;
                 break;
         case 2: data = bswap_16(*(uint16_t*)node->val.data);

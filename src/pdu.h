@@ -84,9 +84,6 @@ struct pdu_node {
     } val;
 };
 
-//#define bswap_8(val)              val
-//#define PDU_NODE_GETVAL(NODE, SZ) bswap_##SZ(*(uint##SZ_t*)NODE->val.data)
-
 void
 pdu_fields_register (pdu_field_t *fields);
 
