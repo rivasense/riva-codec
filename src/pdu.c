@@ -2,54 +2,50 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "pdu.h"
+#include "pdu-idx.h"
 
-typedef struct pdu_attr {
-    uint32_t   mask_offset;
-    uint32_t   mask_bitlen;
-} pdu_attr_t;
-
-typedef struct pdu_tree {
+typedef struct pdu_heap {
     pdu_node_t nodes[0xFFFF];
     uint32_t   cursor;
-} pdu_tree_t;
+} pdu_heap_t;
 
-static pdu_tree_t           pdu_tree;
-static pdu_field_t         *pdu_dict;
-static pdu_attr_t          *pdu_dict_attrs;
+static pdu_heap_t        pdu_heap;
+static pdu_idx_t        *pdu_dict;
+static pdu_field_dict_t  root_field = { .name = "PDU" };
 
 #define BITSET_LAST(k,n) ((k) & ((1<<(n))-1))
 #define BITSET_MID(k,m,n) BITSET_LAST((k)>>(m),((n)-(m)))
 
 void
-pdu_fields_register (pdu_field_t *fields)
+pdu_fields_register (pdu_field_dict_t *fields)
 {
-    pdu_dict = fields;
+    if (pdu_dict == NULL) {
+        pdu_dict = pdu_idx_create();
+        pdu_idx_insert(pdu_dict, root_field.name, &root_field);
+    }
 
-    pdu_field_t *node  = NULL;
-    int          nodes = 0;
-    for (node = pdu_dict, nodes = 0; node->name; node++, nodes++);
-
-    pdu_dict_attrs = calloc(nodes, sizeof(pdu_dict_attrs[0]));
-    for (int inode = 0; inode < nodes; inode++) {
-        uint64_t mask = pdu_dict[inode].mask;
+    for (int ifield = 0; fields[ifield].name; ifield++) {
+        uint64_t mask = fields[ifield].mask;
         if (mask) {
             while (!(mask & 1) ) {
-                pdu_dict_attrs[inode].mask_offset++;
+                fields[ifield].mask_offset++;
                 mask >>= 1;
             }
             while ( mask ) {
-                pdu_dict_attrs[inode].mask_bitlen++;
+                fields[ifield].mask_bitlen++;
                 mask >>= 1;
             }
         }
+        pdu_idx_insert(pdu_dict, fields[ifield].name, &fields[ifield]);
     }
 }
 
 pdu_node_t *
 pdu_node_get_root   (void *context)
 {
-    return &pdu_tree.nodes[0];
+    return &pdu_heap.nodes[0];
 }
 
 void
@@ -59,7 +55,7 @@ pdu_node_get_value  (pdu_node_t *node, void *value)
     uint16_t *u16 = value;
     uint32_t *u32 = value;
 
-    switch(PDU_FTGET_BYTES(node->val.type)) {
+    switch(PDU_FTGET_BYTES(node->dict->type)) {
     case 1: *u8  = *(uint8_t*)node->val.data;
             break;
     case 2: *u16 = bswap_16(*(uint16_t*)node->val.data);
@@ -70,13 +66,13 @@ pdu_node_get_value  (pdu_node_t *node, void *value)
             break;
     }
 
-    if (node->val.mask) {
-        switch(PDU_FTGET_BYTES(node->val.type)) {
-        case 1: *u8 = (*u8 & node->val.mask) >> node->val.mask_offset;
+    if (node->dict->mask) {
+        switch(PDU_FTGET_BYTES(node->dict->type)) {
+        case 1: *u8 = (*u8 & node->dict->mask) >> node->dict->mask_offset;
                 break;
-        case 2: *u16 = (*u16 & node->val.mask) >> node->val.mask_offset;
+        case 2: *u16 = (*u16 & node->dict->mask) >> node->dict->mask_offset;
                 break;
-        case 4: *u32 = (*u32 & node->val.mask) >> node->val.mask_offset;
+        case 4: *u32 = (*u32 & node->dict->mask) >> node->dict->mask_offset;
                 break;
         }
     }
@@ -90,14 +86,14 @@ pdu_node_trace      (pdu_node_t *node)
     for (int ic = 0; ic < padding; ic++) {
         fprintf(stdout, "  ");
     }
-    fprintf(stdout, "%s: ", node->name);
+    fprintf(stdout, "%s: ", node->dict->name);
 
-    if ((PDU_FTGET_FAMILY(node->val.type) == PDU_FFAMILY_UINT) ||
-        (PDU_FTGET_FAMILY(node->val.type) == PDU_FFAMILY_HEX)) {
+    if ((PDU_FTGET_FAMILY(node->dict->type) == PDU_FFAMILY_UINT) ||
+        (PDU_FTGET_FAMILY(node->dict->type) == PDU_FFAMILY_HEX)) {
 
         uint64_t data = 0;
 
-        switch(/*PDU_FTGET_BYTES(node->val.type)*/node->val.size) {
+        switch(node->val.size) {
         case 1: data = *(uint8_t*)node->val.data;
                 break;
         case 2: data = bswap_16(*(uint16_t*)node->val.data);
@@ -107,11 +103,11 @@ pdu_node_trace      (pdu_node_t *node)
         case 4: data = bswap_32(*(uint32_t*)node->val.data);
                 break;
         }
-        if (node->val.mask) {
-            data = (data & node->val.mask) >> node->val.mask_offset;
+        if (node->dict->mask) {
+            data = (data & node->dict->mask) >> node->dict->mask_offset;
         }
 
-        char *format = (PDU_FTGET_FAMILY(node->val.type) == PDU_FFAMILY_HEX) ? "%x" : "%u";
+        char *format = (PDU_FTGET_FAMILY(node->dict->type) == PDU_FFAMILY_HEX) ? "%x" : "%u";
         fprintf(stdout, format, data);
     }
 
@@ -130,16 +126,18 @@ pdu_node_trace      (pdu_node_t *node)
 pdu_node_t *
 pdu_node_mkpacket   (char *data, uint16_t size, void *context)
 {
-    memset(pdu_tree.nodes, 0, sizeof(pdu_tree.nodes[0]) * pdu_tree.cursor);
-    pdu_tree.cursor = 0;
+    memset(pdu_heap.nodes, 0, sizeof(pdu_heap.nodes[0]) * pdu_heap.cursor);
+    pdu_heap.cursor = 0;
+    pdu_node_t *pnode = &pdu_heap.nodes[pdu_heap.cursor++];
 
-    pdu_node_t *pnode = &pdu_tree.nodes[pdu_tree.cursor++];
-
-    pnode->name        = "PDU";
-    pnode->val.type    = PDU_FT_BYTES;
-    pnode->val.flags   = PDU_FF_PDU;
-    pnode->val.data    = data;
-    pnode->val.size    = size;
+    pdu_field_dict_t *field_dict = NULL;
+    if (pdu_idx_search(pdu_dict, "PDU", &field_dict) < 0) {
+        /* can't find root element: corrupted tree! */
+        return NULL;
+    }
+    pnode->dict     = field_dict;
+    pnode->val.data = data;
+    pnode->val.size = size;
 
     return pnode;
 }
@@ -172,46 +170,39 @@ pdu_node_cursor     (pdu_node_t *node, uint16_t offset, uint16_t offtype)
     return cursor;
 }
 
-
-
-
-
 static pdu_node_t *
 pdu_node_mk__    (char *name, pdu_node_t *parent, char *data, uint16_t size, bool next)
 {
-    pdu_field_t *dnode = pdu_dict;
-    for (int inode = 0; dnode->name; dnode++, inode++) {
-        if (strcasecmp(name, dnode->name) == 0) {
-
-            pdu_node_t *pnode = &pdu_tree.nodes[pdu_tree.cursor++];
-            if (!parent->child_f || !parent->child_l) {
-                parent->child_f = parent->child_l = pnode;
-            } else {
-                parent->child_l->next = pnode;
-                parent->child_l = pnode;
-            }
-
-            pnode->name            = dnode->name;
-            pnode->val.type        = dnode->type;
-            pnode->val.flags       = dnode->flags;
-            pnode->val.mask        = dnode->mask;
-            pnode->val.mask_offset = pdu_dict_attrs[inode].mask_offset;
-            pnode->val.mask_bitlen = pdu_dict_attrs[inode].mask_bitlen;
-
-            pnode->val.data = data ? data : &parent->val.data[parent->val.cursor];
-            pnode->val.size = size ? size : dnode->type & 0xF;
-
-            if (data) {
-                parent->val.cursor = data - parent->val.data;
-            }
-            if (next) {
-                parent->val.cursor += pnode->val.size;
-            }
-
-            return pnode;
-        }
+    pdu_field_dict_t *field_dict = NULL;
+    if (pdu_idx_search(pdu_dict, name, &field_dict) < 0) {
+        /* can't find dict field */
+        return NULL;
     }
-    return NULL;
+
+    /* node allocation */
+    pdu_node_t *pnode = &pdu_heap.nodes[pdu_heap.cursor++];
+    /* setup relations */
+    if (!parent->child_f || !parent->child_l) {
+        parent->child_f = parent->child_l = pnode;
+    } else {
+        parent->child_l->next = pnode;
+        parent->child_l = pnode;
+    }
+    pnode->parent = parent;
+
+    /* setup values */
+    pnode->dict            = field_dict;
+    pnode->val.data = data ? data : &parent->val.data[parent->val.cursor];
+    pnode->val.size = size ? size : field_dict->type & 0xF;
+
+    if (data) {
+        parent->val.cursor = data - parent->val.data;
+    }
+    if (next) {
+        parent->val.cursor += pnode->val.size;
+    }
+
+    return pnode;
 }
 
 pdu_node_t *

@@ -8,6 +8,8 @@
 /*
  * PDU FIELD TYPES
  */
+#define PDU_FT_DEFAULT      0x00
+
 #define PDU_FT_UINT8        0x01
 #define PDU_FT_UINT16       0x02
 #define PDU_FT_UINT24       0x03
@@ -36,14 +38,16 @@
 #define PDU_FTGET_FAMILY(X) (X & 0xF0)
 
 /*
- * PDU FIELD FLAGS
+ * PDU FIELD FLAGSETS
  */
-#define PDU_FF_FIELD        0x00
-#define PDU_FF_BITSET       0x01
-#define PDU_FF_SECTION      0x02
-#define PDU_FF_PROTO        0x03
-#define PDU_FF_PDU          0x04
-
+#define PDU_FF_DEFAULT      0x00
+/* flagset 0: family */
+#define PDU_FF_FIELD        0x01
+#define PDU_FF_BITSET       0x02
+#define PDU_FF_SECTION      0x03
+#define PDU_FF_PROTO        0x04
+#define PDU_FF_PDU          0x05
+/* flagset 1: visibility */
 #define PDU_FF_INVISIBLE    0x10
 
 /*
@@ -56,36 +60,44 @@
 #define PDU_CURSOFF_DEC     0x04
 
 /*
- *
+ * PDU field dictionary item
  */
-typedef struct pdu_field  pdu_field_t;
-struct pdu_field {
-    char       *name;
-    uint32_t    type;
-    uint64_t    mask;
-    uint64_t    flags;
+typedef struct pdu_field_dict  pdu_field_dict_t;
+struct pdu_field_dict {
+    char       *name;   /* unique name in form 'proto.name'; mandatory                  */
+    char       *desc;   /* longname / description                                       */
+    uint32_t    type;   /* fieldtype: one of PDU_FT_*                                   */
+    uint64_t    flags;  /* flagset                                                      */
+    uint64_t    mask;   /* bitmask                                                      */
+    /* bitmask helpers, computed on initialization stage */
+    uint32_t    mask_offset;
+    uint32_t    mask_bitlen;
 };
 
+/*
+ * PDU field tree node item
+ */
 typedef struct pdu_node  pdu_node_t;
 struct pdu_node {
-    char        *name;
-    pdu_node_t  *next;          // next node at same level
-    pdu_node_t  *child_f;       // first child
-    pdu_node_t  *child_l;       // last  child
+    pdu_node_t  *parent;        /* next node                     */
+    pdu_node_t  *next;          /* next node at same level       */
+    pdu_node_t  *child_f;       /* first child                   */
+    pdu_node_t  *child_l;       /* last  child                   */
+
+    pdu_field_dict_t *dict;
+
     struct pdu_node_value {
-        uint32_t     type;      // field type
-        uint64_t     flags;     // field flags
-        char        *data;      // data begin pointer
-        uint16_t     size;      // data size in bytes
-        uint64_t     mask;
-        uint16_t     mask_offset;
-        uint16_t     mask_bitlen;
-        uint16_t     cursor;
+        char         *data;     /* data pointer                  */
+        uint16_t      size;     /* data size in bytes            */
+        uint16_t      cursor;
+
+        bool          decoded;
+        uint64_t      decval;
     } val;
 };
 
 void
-pdu_fields_register (pdu_field_t *fields);
+pdu_fields_register (pdu_field_dict_t *fields);
 
 pdu_node_t *
 pdu_node_get_root   (void *context);

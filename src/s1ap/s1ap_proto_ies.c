@@ -20,9 +20,9 @@ __ERABId(pdu_node_t *node, uint16_t offset, uint8_t bytes)
     pdu_node_cursor(node, bytes, PDU_CURSOFF_INC);
 
     erabid->val.size        = bytes;
-    erabid->val.mask_bitlen = 4;
-    erabid->val.mask_offset = (erabid->val.size << 3) - erabid->val.mask_bitlen - offset;
-    erabid->val.mask = 0b1111 << erabid->val.mask_offset;
+    erabid->dict->mask_bitlen = 4;
+    erabid->dict->mask_offset = (erabid->val.size << 3) - erabid->dict->mask_bitlen - offset;
+    erabid->dict->mask = 0b1111 << erabid->dict->mask_offset;
 }
 
 void
