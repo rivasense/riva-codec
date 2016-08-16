@@ -22,22 +22,47 @@ void
 pdu_fields_register (pdu_field_dict_t *fields)
 {
     if (pdu_dict == NULL) {
+        /* initialize empty dictionary */
         pdu_dict = pdu_idx_create();
         pdu_idx_insert(pdu_dict, root_field.name, &root_field);
     }
 
+    /* for each dictionary fields .... */
     for (int ifield = 0; fields[ifield].name; ifield++) {
-        uint64_t mask = fields[ifield].mask;
+
+        pdu_field_dict_t *field = &fields[ifield];
+
+        /* calculate mask offset/bitlen helpers */
+        uint64_t mask = field->mask;
         if (mask) {
             while (!(mask & 1) ) {
-                fields[ifield].mask_offset++;
+                field->mask_offset++;
                 mask >>= 1;
             }
             while ( mask ) {
-                fields[ifield].mask_bitlen++;
+                field->mask_bitlen++;
                 mask >>= 1;
             }
         }
+        /* generate description, if not set */
+        if (!field->desc) {
+            int lname = strlen(field->name);
+            int idx = lname - 1;
+            for (; (idx >= 0) && (field->name[idx] != '.'); idx--);
+            if (idx >= 0) {
+                field->desc = strdup(&field->name[idx]);
+            }
+            for (idx = 0; !field->desc[idx]; idx++) {
+                switch (field->desc[idx]) {
+                case '_': field->desc[idx] = '-';
+                }
+            }
+        }
+        /* set field type */
+        if (field->type == PDU_FT_DEFAULT) {
+            field->type = PDU_FT_SECTION;
+        }
+        /* insert to the field index */
         pdu_idx_insert(pdu_dict, fields[ifield].name, &fields[ifield]);
     }
 }
@@ -130,12 +155,12 @@ pdu_node_mkpacket   (char *data, uint16_t size, void *context)
     pdu_heap.cursor = 0;
     pdu_node_t *pnode = &pdu_heap.nodes[pdu_heap.cursor++];
 
-    pdu_field_dict_t *field_dict = NULL;
+    void *field_dict = NULL;
     if (pdu_idx_search(pdu_dict, "PDU", &field_dict) < 0) {
         /* can't find root element: corrupted tree! */
         return NULL;
     }
-    pnode->dict     = field_dict;
+    pnode->dict     = (pdu_field_dict_t *)field_dict;
     pnode->val.data = data;
     pnode->val.size = size;
 
@@ -173,7 +198,7 @@ pdu_node_cursor     (pdu_node_t *node, uint16_t offset, uint16_t offtype)
 static pdu_node_t *
 pdu_node_mk__    (char *name, pdu_node_t *parent, char *data, uint16_t size, bool next)
 {
-    pdu_field_dict_t *field_dict = NULL;
+    void *field_dict = NULL;
     if (pdu_idx_search(pdu_dict, name, &field_dict) < 0) {
         /* can't find dict field */
         return NULL;
@@ -191,9 +216,9 @@ pdu_node_mk__    (char *name, pdu_node_t *parent, char *data, uint16_t size, boo
     pnode->parent = parent;
 
     /* setup values */
-    pnode->dict            = field_dict;
+    pnode->dict            = (pdu_field_dict_t *)field_dict;
     pnode->val.data = data ? data : &parent->val.data[parent->val.cursor];
-    pnode->val.size = size ? size : field_dict->type & 0xF;
+    pnode->val.size = size ? size : pnode->dict->type & 0xF;
 
     if (data) {
         parent->val.cursor = data - parent->val.data;
