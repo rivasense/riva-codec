@@ -32,22 +32,19 @@
 #define PDU_FT_CHAR         0x30
 #define PDU_FT_BITSET       0x40
 
+#define PDU_FT_SECTION      0xA0
+#define PDU_FT_PROTO        0xB0
+#define PDU_FT_PDU          0xC0
+
 #define PDU_FFAMILY_UINT    0x00
 #define PDU_FFAMILY_HEX     0x10
 #define PDU_FTGET_BYTES(X)  (X & 0x0F)
 #define PDU_FTGET_FAMILY(X) (X & 0xF0)
 
 /*
- * PDU FIELD FLAGSETS
+ * PDU FIELD FLAGS
  */
 #define PDU_FF_DEFAULT      0x00
-/* flagset 0: family */
-#define PDU_FF_FIELD        0x01
-#define PDU_FF_BITSET       0x02
-#define PDU_FF_SECTION      0x03
-#define PDU_FF_PROTO        0x04
-#define PDU_FF_PDU          0x05
-/* flagset 1: visibility */
 #define PDU_FF_INVISIBLE    0x10
 
 /*

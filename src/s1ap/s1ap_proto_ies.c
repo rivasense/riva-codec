@@ -8,7 +8,7 @@
 static void
 __pLMNidentity(pdu_node_t *node)
 {
-    node = pdu_node_mknext("PLMNidentity", node);
+    node = pdu_node_mknext("s1ap.PLMNidentity", node);
     //pdu_node_mknext("MCC", node);
     //pdu_node_mknext("MNC", node);
 }
@@ -16,7 +16,7 @@ __pLMNidentity(pdu_node_t *node)
 static void
 __ERABId(pdu_node_t *node, uint16_t offset, uint8_t bytes)
 {
-    pdu_node_t *erabid = pdu_node_mk("e-RAB-ID", node);
+    pdu_node_t *erabid = pdu_node_mk("s1ap.e_RAB_ID", node);
     pdu_node_cursor(node, bytes, PDU_CURSOFF_INC);
 
     erabid->val.size        = bytes;
@@ -31,7 +31,7 @@ pie_0_MME_UE_ID(pdu_node_t *node, char *data, uint16_t size)
     if (size > sizeof(uint32_t)) {
         pdu_node_cursor(node, size - sizeof(uint32_t), PDU_CURSOFF_INC);
     }
-    pdu_node_mk("MME-UE-S1AP-ID", node);
+    pdu_node_mk("s1ap.MME_UE_S1AP_ID", node);
 }
 
 void
@@ -40,22 +40,22 @@ pie_1_HandoverType(pdu_node_t *node, char *data, uint16_t size)
     if (size > sizeof(uint8_t)) {
         pdu_node_cursor(node, size - sizeof(uint8_t), PDU_CURSOFF_INC);
     }
-    pdu_node_mk("HandoverType", node);
+    pdu_node_mk("s1ap.HandoverType", node);
 }
 
 void
 pie_2_Cause(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_t *ncause = pdu_node_mk("Cause", node);
+    pdu_node_t *ncause = pdu_node_mk("s1ap.Cause", node);
     uint8_t     vcause;
     pdu_node_get_value(ncause, &vcause);
 
     switch (vcause) {
-    case 0: pdu_node_mk("radioNetwork", ncause); break;
-    case 1: pdu_node_mk("transport",    ncause); break;
-    case 2: pdu_node_mk("nas",          ncause); break;
-    case 3: pdu_node_mk("protocol",     ncause); break;
-    case 4: pdu_node_mk("misc",         ncause); break;
+    case 0: pdu_node_mk("s1ap.radioNetwork", ncause); break;
+    case 1: pdu_node_mk("s1ap.transport",    ncause); break;
+    case 2: pdu_node_mk("s1ap.nas",          ncause); break;
+    case 3: pdu_node_mk("s1ap.protocol",     ncause); break;
+    case 4: pdu_node_mk("s1ap.misc",         ncause); break;
     }
 }
 
@@ -69,36 +69,36 @@ pie_4_TargetID(pdu_node_t *node, char *data, uint16_t size)
 {
     uint8_t targetid;
 
-    node = pdu_node_mknext("TargetID", node);
+    node = pdu_node_mknext("s1ap.TargetID", node);
     pdu_node_get_value(node, &targetid);
 
     if (targetid == 0) {
-        pdu_node_t *tenb = pdu_node_mkdatasize("targeteNB-ID", node, data + 1, size - 1);
+        pdu_node_t *tenb = pdu_node_mkdatasize("s1ap.targeteNB_ID", node, data + 1, size - 1);
 
         /* global ENB ID */
         __pLMNidentity(tenb);
 
         uint8_t     genb_id_v;
-        pdu_node_t *genb_id = pdu_node_mknext("eNB-ID", tenb);
+        pdu_node_t *genb_id = pdu_node_mknext("s1ap.eNB_ID", tenb);
         pdu_node_get_value(genb_id, &genb_id_v);
         if (genb_id_v == 0) {
-            pdu_node_mknext("macroENB-ID", tenb);
+            pdu_node_mknext("s1ap.macroENB_ID", tenb);
         } else {
-            pdu_node_mknext("homeENB-ID", tenb);
+            pdu_node_mknext("s1ap.homeENB_ID", tenb);
         }
 
 
         /* selected TAI */
         __pLMNidentity(tenb);
-        pdu_node_mknext("tAC", tenb);
+        pdu_node_mknext("s1ap.tAC", tenb);
     }
 
     if (targetid == 1) {
-        pdu_node_t *trnc = pdu_node_mkdatasize("targetRNC-ID", node, data + 2, size - 2);
+        pdu_node_t *trnc = pdu_node_mkdatasize("s1ap.targetRNC_ID", node, data + 2, size - 2);
         __pLMNidentity(trnc);
-        pdu_node_mknext("lAC", trnc);
-        pdu_node_mknext("rAC", trnc);
-        pdu_node_mknext("rNC-ID", trnc);
+        pdu_node_mknext("s1ap.lAC", trnc);
+        pdu_node_mknext("s1ap.rAC", trnc);
+        pdu_node_mknext("s1ap.rNC_ID", trnc);
     }
 }
 
@@ -113,7 +113,7 @@ pie_8_ENB_UE_ID(pdu_node_t *node, char *data, uint16_t size)
     if (size > sizeof(uint16_t)) {
         pdu_node_cursor(node, size - sizeof(uint16_t), PDU_CURSOFF_INC);
     }
-    pdu_node_mknext("ENB-UE-S1AP-ID", node);
+    pdu_node_mknext("s1ap.ENB_UE_S1AP_ID", node);
 }
 
 /* pid  9: unknown
@@ -126,8 +126,8 @@ void
 pie_12_ERABSubjecttoDataForwardingList(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABSubjecttoDataForwardingList",
-                    "E-RABDataForwardingItem",
+                    "s1ap.E_RABSubjecttoDataForwardingList",
+                    "s1ap.E_RABDataForwardingItem",
                     data, size);
 }
 
@@ -157,8 +157,8 @@ void
 pie_16_ERABToBeSetupListBearerSUReq(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABToBeSetupListBearerSUReq",
-                    "E-RABToBeSetupItemBearerSUReq",
+                    "s1ap.E_RABToBeSetupListBearerSUReq",
+                    "s1ap.E_RABToBeSetupItemBearerSUReq",
                     data, size);
 
 }
@@ -179,14 +179,14 @@ pie_17_ERABToBeSetupItemBearerSUReq(pdu_node_t *node, char *data, uint16_t size)
     __ERABId(node, 3, 1);
     /* e_RABlevelQoSParameters */
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
-    pdu_node_mknext("qCI", node);
+    pdu_node_mknext("s1ap.qCI", node);
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC); // skip allocationRetensionPriority fieldset
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC); // skip Extension Present bit fieldset
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC); // padding
     /* transportLayerAddress:: skip */
     pdu_node_cursor(node, 4, PDU_CURSOFF_INC);
     /* gTP-TEID */
-    pdu_node_mknext("gTP-TEID", node);
+    pdu_node_mknext("s1ap.gTP_TEID", node);
 
 }
 
@@ -195,8 +195,8 @@ void
 pie_18_ERABAdmittedList(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABAdmittedList",
-                    "E-RABAdmittedItem",
+                    "s1ap.E_RABAdmittedList",
+                    "s1ap.E_RABAdmittedItem",
                     data, size);
 }
 
@@ -212,7 +212,7 @@ pie_20_RABAdmittedItem(pdu_node_t *node, char *data, uint16_t size)
     __ERABId(node, 7, 2);
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC); // padding
     pdu_node_cursor(node, 4, PDU_CURSOFF_INC); // transportLayerAddress
-    pdu_node_mknext("gTP-TEID", node);
+    pdu_node_mknext("s1ap.gTP_TEID", node);
 }
 
 void
@@ -225,8 +225,8 @@ void
 pie_22_ERABToBeSwitchedDLList(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABToBeSwitchedDLList",
-                    "E-RABToBeSwitchedDLItem",
+                    "s1ap.E_RABToBeSwitchedDLList",
+                    "s1ap.E_RABToBeSwitchedDLItem",
                     data, size);
 }
 
@@ -236,7 +236,7 @@ pie_23_ERABToBeSwitchedDLItem(pdu_node_t *node, char *data, uint16_t size)
 {
     __ERABId(node, 3, 2);
     pdu_node_cursor(node, 4, PDU_CURSOFF_INC); // skip transportLayerAddress
-    pdu_node_mknext("gTP-TEID", node);
+    pdu_node_mknext("s1ap.gTP_TEID", node);
 }
 
 /* CHECK: 24 -> 52 (21 pack) */
@@ -244,8 +244,8 @@ void
 pie_24_ERABToBeSetupListCtxtSUReq(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABToBeSetupListCtxtSUReq",
-                    "E-RABToBeSetupItemCtxtSUReq",
+                    "s1ap.E_RABToBeSetupListCtxtSUReq",
+                    "s1ap.E_RABToBeSetupItemCtxtSUReq",
                     data, size);
 }
 
@@ -265,9 +265,9 @@ pie_27_ERABToBeSetupItemHOReq(pdu_node_t *node, char *data, uint16_t size)
 {
     __ERABId(node, 3, 2);
     pdu_node_cursor(node, 4, PDU_CURSOFF_INC); // skip transportLayerAddress
-    pdu_node_mknext("gTP-TEID", node);
+    pdu_node_mknext("s1ap.gTP_TEID", node);
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC); // padding
-    pdu_node_mknext("qCI", node);
+    pdu_node_mknext("s1ap.qCI", node);
 }
 
 /* CHECK: 28 -> 39 (18646 packet) */
@@ -275,8 +275,8 @@ void
 pie_28_ERABSetupListBearerSURes(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABSetupListBearerSURes",
-                    "E-RABSetupItemBearerSURes",
+                    "s1ap.E_RABSetupListBearerSURes",
+                    "s1ap.E_RABSetupItemBearerSURes",
                     data, size);
 }
 
@@ -291,8 +291,8 @@ void
 pie_30_ERABToBeModifiedListBearerModReq(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABToBeModifiedListBearerModReq",
-                    "E-RABToBeModifiedItemBearerModReq",
+                    "s1ap.E_RABToBeModifiedListBearerModReq",
+                    "s1ap.E_RABToBeModifiedItemBearerModReq",
                     data, size);
 }
 
@@ -301,8 +301,8 @@ void
 pie_31_ERABModifyListBearerModRes(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABModifyListBearerModRes",
-                    "E-RABModifyItemBearerModRes",
+                    "s1ap.E_RABModifyListBearerModRes",
+                    "s1ap.E_RABModifyItemBearerModRes",
                     data, size);
 }
 
@@ -316,8 +316,8 @@ void
 pie_33_ERABToBeReleasedList(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABList",
-                    "E-RABItem",
+                    "s1ap.E_RABList",
+                    "s1ap.E_RABItem",
                     data, size);
 }
 
@@ -342,7 +342,7 @@ pie_36_ERABToBeModifiedItemBearerModReq(pdu_node_t *node, char *data, uint16_t s
     /* e_RAB_ID */
     __ERABId(node, 3, 1);
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC); // padding
-    pdu_node_mknext("qCI", node);
+    pdu_node_mknext("s1ap.qCI", node);
 }
 
 /* CHECK: 37 (5742 pack) */
@@ -364,7 +364,7 @@ pie_39_ERABSetupItemBearerSURes(pdu_node_t *node, char *data, uint16_t size)
 {
     __ERABId(node, 3, 2);
     pdu_node_cursor(node, 4, PDU_CURSOFF_INC); // skip transportLayerAddress
-    pdu_node_mknext("gTP-TEID", node);
+    pdu_node_mknext("s1ap.gTP_TEID", node);
 }
 
 void
@@ -385,8 +385,8 @@ pie_41_HandoverRestrictionList(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_43_UEPagingID(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mknext("mMEC", node); // TODO: mMMEC decode
-    pdu_node_mknext("m-TMSI",  node);}
+    pdu_node_mknext("s1ap.mMEC", node); // TODO: mMMEC decode
+    pdu_node_mknext("s1ap.m_TMSI",  node);}
 
 void
 pie_44_pagingDRX(pdu_node_t *node, char *data, uint16_t size)
@@ -401,8 +401,8 @@ void
 pie_46_TAIList(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "TAIList",
-                    "TAIItem",
+                    "s1ap.TAIList",
+                    "s1ap.TAIItem",
                     data, size);
 }
 
@@ -411,7 +411,7 @@ pie_47_TAIItem(pdu_node_t *node, char *data, uint16_t size)
 {
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
     __pLMNidentity(node);
-    pdu_node_mknext("tAC", node);
+    pdu_node_mknext("s1ap.tAC", node);
 }
 
 void
@@ -430,7 +430,7 @@ pie_50_ERABSetupItemCtxtSURes(pdu_node_t *node, char *data, uint16_t size)
 {
     __ERABId(node, 3, 2);
     pdu_node_cursor(node, 4, PDU_CURSOFF_INC); // skip transportLayerAddress
-    pdu_node_mknext("gTP-TEID", node);
+    pdu_node_mknext("s1ap.gTP_TEID", node);
 }
 
 /* CHECK: 51 -> 50 (5 pack) */
@@ -438,8 +438,8 @@ void
 pie_51_ERABSetupListCtxtSURes(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABSetupListCtxtSURes",
-                    "E-RABSetupItemCtxtSURes",
+                    "s1ap.E_RABSetupListCtxtSURes",
+                    "s1ap.E_RABSetupItemCtxtSURes",
                     data, size);
 }
 
@@ -451,14 +451,14 @@ pie_52_ERABToBeSetupItemCtxtSUReq(pdu_node_t *node, char *data, uint16_t size)
     __ERABId(node, 4, 1);
     /* e_RABlevelQoSParameters */
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC); // padding
-    pdu_node_mknext("qCI", node);
+    pdu_node_mknext("s1ap.qCI", node);
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC); // skip allocationRetensionPriority fieldset
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC); // skip Extension Present bit fieldset
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC); // padding
     /* transportLayerAddress:: skip */
     pdu_node_cursor(node, 4, PDU_CURSOFF_INC);
     /* gTP-TEID */
-    pdu_node_mknext("gTP-TEID", node);
+    pdu_node_mknext("s1ap.gTP_TEID", node);
 }
 
 /* CHECK: 53 -> 27 (2813 pack) */
@@ -466,8 +466,8 @@ void
 pie_53_ERABToBeSetupListHOReq(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABToBeSetupListHOReq",
-                    "E-RABToBeSetupItemHOReq",
+                    "s1ap.E_RABToBeSetupListHOReq",
+                    "s1ap.E_RABToBeSetupItemHOReq",
                     data, size);
 }
 
@@ -501,12 +501,12 @@ pie_59_Global_ENB_ID(pdu_node_t *node, char *data, uint16_t size)
     __pLMNidentity(node);
 
     uint8_t     genb_id_v;
-    pdu_node_t *genb_id = pdu_node_mknext("eNB-ID", node);
+    pdu_node_t *genb_id = pdu_node_mknext("s1ap.eNB_ID", node);
     pdu_node_get_value(genb_id, &genb_id_v);
     if (genb_id_v == 0) {
-        pdu_node_mknext("macroENB-ID", node);
+        pdu_node_mknext("s1ap.macroENB_ID", node);
     } else {
-        pdu_node_mknext("homeENB-ID", node);
+        pdu_node_mknext("s1ap.homeENB_ID", node);
     }
 }
 
@@ -532,7 +532,7 @@ pie_63_ServedPLMNs(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_64_SupportedTAs(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("tAC", node);
+    pdu_node_mk("s1ap.tAC", node);
 }
 
 void
@@ -544,10 +544,10 @@ void
 pie_66_UEAggregateMaximumBitrate(pdu_node_t *node, char *data, uint16_t size)
 {
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
-    pdu_node_mknext("uEaggregateMaximumBitRateDL", node);
+    pdu_node_mknext("s1ap.uEaggregateMaximumBitRateDL", node);
 
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
-    pdu_node_mknext("uEaggregateMaximumBitRateUL", node);
+    pdu_node_mknext("s1ap.uEaggregateMaximumBitRateUL", node);
 }
 
 void
@@ -567,8 +567,8 @@ void
 pie_69_ERABReleaseListBearerRelComp(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABReleaseListBearerRelComp",
-                    "E-RABReleaseItemBearerRelComp",
+                    "s1ap.E_RABReleaseListBearerRelComp",
+                    "s1ap.E_RABReleaseItemBearerRelComp",
                     data, size);
 }
 
@@ -610,8 +610,8 @@ pie_75_GUMMEI_ID(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_78_ERABInformationListItem(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("cell-ID",  node);
-    pdu_node_mk("e-RAB-ID", node);
+    pdu_node_mk("s1ap.cell-ID",  node);
+    pdu_node_mk("s1ap.e-RAB-ID", node);
 }
 
 void
@@ -670,8 +670,8 @@ void
 pie_90_eNB_StatusTransferTransparentContainer(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "eNB-StatusTransfer-TransparentContainer",
-                    "Bearers-SubjectToStatusTransfer-Item",
+                    "s1ap.eNB_StatusTransfer_TransparentContainer",
+                    "s1ap.Bearers_SubjectToStatusTransfer_Item",
                      data, size);
 }
 
@@ -696,7 +696,7 @@ pie_94_ERABToBeSwitchedULItem(pdu_node_t *node, char *data, uint16_t size)
 {
     __ERABId(node, 3, 2);
     pdu_node_cursor(node, 4, PDU_CURSOFF_INC); // skip transportLayerAddress
-    pdu_node_mknext("gTP-TEID", node);
+    pdu_node_mknext("s1ap.gTP_TEID", node);
 }
 
 /* CHECK: 95 -> 94 (2567 packet) */
@@ -704,8 +704,8 @@ void
 pie_95_ERABToBeSwitchedULList(pdu_node_t *node, char *data, uint16_t size)
 {
     s1ap_decode_list(node,
-                    "E-RABToBeSwitchedULList",
-                    "E-RABToBeSwitchedULItem",
+                    "s1ap.E_RABToBeSwitchedULList",
+                    "s1ap.E_RABToBeSwitchedULItem",
                     data, size);
 }
 
@@ -713,8 +713,8 @@ pie_95_ERABToBeSwitchedULList(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_96_STMSI(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mknext("mMEC", node); // TODO: mMMEC decode
-    pdu_node_mknext("m-TMSI",  node);
+    pdu_node_mknext("s1ap.mMEC", node); // TODO: mMMEC decode
+    pdu_node_mknext("s1ap.m_TMSI",  node);
 }
 
 void
@@ -731,10 +731,10 @@ void
 pie_99_UE_S1AP_IDs(pdu_node_t *node, char *data, uint16_t size)
 {
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
-    pdu_node_mknext("MME-UE-S1AP-ID", node);
+    pdu_node_mknext("s1ap.MME_UE_S1AP_ID", node);
 
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
-    pdu_node_mknext("ENB-UE-S1AP-ID", node);
+    pdu_node_mknext("s1ap.ENB_UE_S1AP_ID", node);
 }
 
 /* CHECK: 100 (8 packet) */
@@ -743,7 +743,7 @@ pie_100_EUTRAN_CGI(pdu_node_t *node, char *data, uint16_t size)
 {
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
     __pLMNidentity(node);
-    pdu_node_mknext("cell-ID", node);
+    pdu_node_mknext("s1ap.cell_ID", node);
 
 }
 
@@ -775,8 +775,8 @@ pie_105_ServedGUMMEIs(pdu_node_t *node, char *data, uint16_t size)
     pdu_node_cursor(node, 1, PDU_CURSOFF_INC);
     __pLMNidentity(node);
 
-    pdu_node_mk("mME-Group-ID", node);
-    pdu_node_mk("mME-Code", node);
+    pdu_node_mk("s1ap.mME_Group_ID", node);
+    pdu_node_mk("s1ap.mME_Code", node);
 }
 
 void
@@ -797,7 +797,7 @@ pie_108_CSFallbackIndicator(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_109_CNDomain(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("CNDomain", node);
+    pdu_node_mk("s1ap.CNDomain", node);
 }
 
 void
@@ -923,7 +923,7 @@ pie_133_MSClassmark3(pdu_node_t *node, char *data, uint16_t size)
 void
 pie_134_RRCEstablishmentCause(pdu_node_t *node, char *data, uint16_t size)
 {
-    pdu_node_mk("RRC-Establishment-Cause", node);
+    pdu_node_mk("s1ap.RRC_Establishment_Cause", node);
 }
 
 void
