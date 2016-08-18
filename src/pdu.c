@@ -13,7 +13,7 @@ typedef struct pdu_heap {
 
 static pdu_heap_t        pdu_heap;
 static pdu_idx_t        *pdu_dict;
-static pdu_field_dict_t  root_field = { .name = "PDU" };
+static pdu_field_dict_t  root_field = { .name = "PDU", .type = PDU_FT_PDU };
 
 #define BITSET_LAST(k,n) ((k) & ((1<<(n))-1))
 #define BITSET_MID(k,m,n) BITSET_LAST((k)>>(m),((n)-(m)))
@@ -50,7 +50,7 @@ pdu_fields_register (pdu_field_dict_t *fields)
             int idx = lname - 1;
             for (; (idx >= 0) && (field->name[idx] != '.'); idx--);
             if (idx >= 0) {
-                field->desc = strdup(&field->name[idx]);
+                field->desc = strdup(&field->name[idx + 1]);
             }
             for (idx = 0; !field->desc[idx]; idx++) {
                 switch (field->desc[idx]) {
@@ -63,7 +63,11 @@ pdu_fields_register (pdu_field_dict_t *fields)
             field->type = PDU_FT_SECTION;
         }
         /* insert to the field index */
-        pdu_idx_insert(pdu_dict, fields[ifield].name, &fields[ifield]);
+        int rcode = pdu_idx_insert(pdu_dict, field->name, field);
+        if (rcode <= 0) {
+            /* TODO: error handling here */
+            fprintf(stderr, "duplication: %s\n", field->name);
+        }
     }
 }
 
@@ -111,7 +115,7 @@ pdu_node_trace      (pdu_node_t *node)
     for (int ic = 0; ic < padding; ic++) {
         fprintf(stdout, "  ");
     }
-    fprintf(stdout, "%s: ", node->dict->name);
+    fprintf(stdout, "%s: ", node->dict->desc ? node->dict->desc : node->dict->name);
 
     if ((PDU_FTGET_FAMILY(node->dict->type) == PDU_FFAMILY_UINT) ||
         (PDU_FTGET_FAMILY(node->dict->type) == PDU_FFAMILY_HEX)) {
@@ -156,9 +160,10 @@ pdu_node_mkpacket   (char *data, uint16_t size, void *context)
     pdu_node_t *pnode = &pdu_heap.nodes[pdu_heap.cursor++];
 
     void *field_dict = NULL;
-    if (pdu_idx_search(pdu_dict, "PDU", &field_dict) < 0) {
-        /* can't find root element: corrupted tree! */
-        return NULL;
+    if (pdu_idx_search(pdu_dict, "PDU", &field_dict) <= 0) {
+        /* TODO: error handling here */
+        fprintf(stderr, "can't find root field\n");
+        exit(0);
     }
     pnode->dict     = (pdu_field_dict_t *)field_dict;
     pnode->val.data = data;
@@ -199,9 +204,10 @@ static pdu_node_t *
 pdu_node_mk__    (char *name, pdu_node_t *parent, char *data, uint16_t size, bool next)
 {
     void *field_dict = NULL;
-    if (pdu_idx_search(pdu_dict, name, &field_dict) < 0) {
-        /* can't find dict field */
-        return NULL;
+    if (pdu_idx_search(pdu_dict, name, &field_dict) <= 0) {
+        /* TODO: error handling here */
+        fprintf(stderr, "can't find field: %s\n", name);
+        exit(0);
     }
 
     /* node allocation */

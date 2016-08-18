@@ -104,7 +104,7 @@ avl_insert(avl_node_t **node, char *key, void  *data)
 
         return 1;
 
-    } else if ((*node)->key == key) {
+    } else if (strcmp((*node)->key, key) == 0) {
         /* element with this key already exists */
         return 0;
 
@@ -126,7 +126,7 @@ avl_search(avl_node_t *node, char *key, void **data)
     if (node == NULL) {
         return 0;
 
-    } else if (node->key == key) {
+    } else if (strcmp(node->key, key) == 0) {
         *data = node->data;
         return 1;
 
